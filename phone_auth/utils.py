@@ -24,7 +24,8 @@ def get_username_regex():
 def validate_username(username):
     if re.search(get_username_regex(), username) is None:
         raise ValidationError(
-            _('%(username)s should be alphanumeric and in lowercase'),
+            _('%(username)s should be alphanumeric, lowercase and should\
+            contain atleast 4 and atmost 30 charachters'),
             params={'username': username},
         )
 

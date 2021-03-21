@@ -64,3 +64,31 @@ LOGIN_METHODS = {'email', 'phone', 'username'}
 ```
 
 Note: LOGIN_METHODS can't be empty
+
+## Override templates
+
+To override templates, create a folder 'templates' in base directory (directory which contains 'manage.py' file).
+
+Now add path to this folder in settings.py.
+It will look like this -
+
+```
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+```
+
+Now in templates folder, you can create file 'register.html', 
+'login.html' and templates will get overriden.
