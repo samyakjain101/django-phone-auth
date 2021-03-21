@@ -2,3 +2,4 @@ include LICENSE
 include README.md
 recursive-include phone_auth/templates *
 recursive-include docs *
+recursive-include tests *
