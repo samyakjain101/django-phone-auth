@@ -1,5 +1,6 @@
 # django-phone-auth
-A Django app to authenticate and register user using phone/email/username.
+A Django app to authenticate and register user using phone/email/username. It uses
+default User Model.
 
 ## Installation
 ```
