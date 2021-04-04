@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -37,4 +37,5 @@ jobs:
         flake8 . --count --max-line-length=127 --exclude=**/migrations --statistics
     - name: Test
       run: |
-        python runtests.py
+        python manage.py migrate
+        python manage.py test
