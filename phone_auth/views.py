@@ -1,10 +1,10 @@
-from django.shortcuts import render
-from django.views.generic.edit import FormView
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import redirect
-from django.views import View
 from django.conf import settings
-from .forms import RegisterForm, LoginForm
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import redirect, render
+from django.views import View
+from django.views.generic.edit import FormView
+
+from .forms import LoginForm, RegisterForm
 
 
 class RegisterView(FormView):

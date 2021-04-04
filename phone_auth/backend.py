@@ -1,10 +1,11 @@
-from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
-from .forms import (
-    PhoneValidationForm, EmailValidationForm,
-    UsernameValidationForm)
+from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+
 from phone_auth.utils import login_method_allow
+
+from .forms import (EmailValidationForm, PhoneValidationForm,
+                    UsernameValidationForm)
 
 User = get_user_model()
 

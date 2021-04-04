@@ -1,10 +1,11 @@
+from django.conf import settings
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import check_password, make_password
-from django.conf import settings
-from phone_auth.utils import login_method_allow
+
 from phone_auth.models import PhoneNumber
+from phone_auth.utils import login_method_allow
 
 
 class AccountTests(TestCase):
@@ -19,13 +20,13 @@ class AccountTests(TestCase):
     }
 
     @classmethod
-    def setUpTestData(self):
-        user_data = dict(self.data)
+    def setUpTestData(cls):
+        user_data = dict(cls.data)
         phone = user_data.pop('phone')
         user_data['password'] = make_password(user_data['password'])
 
-        self.user = User.objects.create(**user_data)
-        PhoneNumber.objects.create(user=self.user, phone=phone)
+        cls.user = User.objects.create(**user_data)
+        PhoneNumber.objects.create(user=cls.user, phone=phone)
 
     def test_register(self):
 

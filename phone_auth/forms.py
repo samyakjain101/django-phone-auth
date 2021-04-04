@@ -1,12 +1,14 @@
 import uuid
+
 from django import forms
-from django.db import DatabaseError, transaction
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-from phone_auth.utils import get_setting, validate_username
+from django.db import DatabaseError, transaction
 from phonenumber_field.formfields import PhoneNumberField
+
+from phone_auth.utils import get_setting, validate_username
+
 from .models import PhoneNumber
 
 User = get_user_model()
