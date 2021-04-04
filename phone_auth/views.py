@@ -1,7 +1,6 @@
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
-from django.views import View
 from django.views.generic.edit import FormView
 
 from .forms import LoginForm, RegisterForm
@@ -42,19 +41,3 @@ class LoginView(FormView):
             return render(
                 self.request, 'login.html', context={'form': form}, status=400)
         return super().form_valid(form)
-
-
-class LogoutView(View):
-
-    def get(self, request):
-        if not request.user.is_authenticated:
-            return redirect(
-                settings.LOGIN_URL
-                if settings.LOGIN_URL is not None
-                else '/')
-
-        logout(request)
-        return redirect(
-            settings.LOGOUT_REDIRECT_URL
-            if settings.LOGOUT_REDIRECT_URL is not None
-            else '/')
