@@ -12,7 +12,7 @@ User = get_user_model()
 
 class CustomAuthBackend(ModelBackend):
 
-    def authenticate(self, request, login=None, password=None):
+    def authenticate(self, request, login=None, password=None, **kwargs):
 
         if login and password:
 
