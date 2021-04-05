@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
 
 from .forms import LoginForm, PasswordResetForm, RegisterForm
 

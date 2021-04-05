@@ -104,3 +104,18 @@ class AccountTests(TestCase):
             settings.LOGOUT_REDIRECT_URL
             if settings.LOGOUT_REDIRECT_URL is not None
             else '/')
+
+    def test_password_reset_view(self):
+        url = reverse('phone_auth:custom_pass_reset')
+
+        for method in ['phone', 'email']:
+            data = {
+                "login": self.data[method]
+            }
+            response = self.client.post(url, data)
+            self.assertEqual(response.status_code, 302)
+
+    def test_password_reset_done_view(self):
+        url = reverse('phone_auth:custom_pass_reset_done')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

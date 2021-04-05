@@ -1,12 +1,8 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from .views import (
-    CustomPasswordResetView,
-    LoginView,
-    RegisterView,
-    CustomPasswordResetDoneView
-)
+from .views import (CustomPasswordResetDoneView, CustomPasswordResetView,
+                    LoginView, RegisterView)
 
 app_name = 'phone_auth'
 
