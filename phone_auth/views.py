@@ -2,10 +2,13 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
+from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
 
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, PasswordResetForm, RegisterForm
 
 
 class RegisterView(FormView):
@@ -50,10 +53,28 @@ class LoginView(FormView):
         return super().form_valid(form)
 
 
-# class CustomPasswordResetView(PasswordResetView):
-#     form_class = PasswordResetForm
-#     template_name = 'password_reset.html'
-#
-#     def form_valid(self, form):
-#         form.save()
-#         return super().form_valid(form)
+class CustomPasswordResetView(FormView):
+    form_class = PasswordResetForm
+    template_name = 'password_reset.html'
+    success_url = reverse_lazy('phone_auth:custom_pass_reset_done')
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+class CustomPasswordResetDoneView(TemplateView):
+    template_name = 'password_reset_done.html'
+    title = _('Password reset sent')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'title': self.title,
+            **(self.extra_context or {})
+        })
+        return context

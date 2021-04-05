@@ -3,13 +3,16 @@ import uuid
 from django import forms
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
+from django.db.models import Q
 from phonenumber_field.formfields import PhoneNumberField
 
 from phone_auth.utils import get_setting, validate_username
 
 from .models import EmailAddress, PhoneNumber
+from .signals import reset_pass_mail, reset_pass_phone
 
 User = get_user_model()
 
@@ -91,34 +94,38 @@ class UsernameValidationForm(forms.Form):
     username = forms.CharField(validators=[validate_username])
 
 
-# class PasswordResetForm(forms.Form):
-#     login = forms.CharField()
-#
-#     @staticmethod
-#     def get_users_and_method(self, login):
-#         lookup_obj = Q()
-#
-#         is_phone = False
-#         if PhoneValidationForm({'phone': login}).is_valid():
-#             lookup_obj |= Q(phonenumber__phone=login)
-#             is_phone = True
-#
-#         if EmailValidationForm({'email': login}).is_valid():
-#             lookup_obj |= Q(email=login)
-#
-#         return User.objects.filter(lookup_obj), is_phone
-#
-#     def save(self):
-#         login = self.cleaned_data.get('login', None)
-#         if login is not None:
-#             users, is_phone = self.get_users_and_method(login)
-#
-#             if users:
-#                 if is_phone:
-#                     # only one user returned
-#                     pass
-#                 else:
-#                     # many users may be returned
-#                     pass
-#             else:
-#                 pass
+class PasswordResetForm(forms.Form):
+    login = forms.CharField()
+
+    @staticmethod
+    def get_users_and_method(login):
+        lookup_obj = Q()
+
+        is_phone = False
+        if PhoneValidationForm({'phone': login}).is_valid():
+            lookup_obj |= Q(phonenumber__phone=login)
+            is_phone = True
+
+        elif EmailValidationForm({'email': login}).is_valid():
+            lookup_obj |= Q(emailaddress__email=login)
+
+        else:
+            return None, False
+
+        try:
+            user = User.objects.get(lookup_obj)
+            return user, is_phone
+        except User.DoesNotExist:
+            return None, False
+
+    def save(self):
+        login = self.cleaned_data.get('login', None)
+        if login is not None:
+            user, is_phone = self.get_users_and_method(login)
+
+            if user:
+                token = default_token_generator.make_token(user)
+                if is_phone:
+                    reset_pass_phone.send(sender=PhoneNumber, user=user, token=token)
+                else:
+                    reset_pass_mail.send(sender=EmailAddress, user=user, token=token)
