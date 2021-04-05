@@ -9,7 +9,7 @@ from phonenumber_field.formfields import PhoneNumberField
 
 from phone_auth.utils import get_setting, validate_username
 
-from .models import PhoneNumber
+from .models import EmailAddress, PhoneNumber
 
 User = get_user_model()
 
@@ -45,17 +45,23 @@ class RegisterForm(forms.Form):
 
     def save(self):
         try:
-            with transaction.atomic():
-                phone_cleaned = self.cleaned_data.pop('phone')
-                if not self.cleaned_data['username']:
-                    self.cleaned_data['username'] = uuid.uuid4().hex
-                self.cleaned_data['password'] = make_password(
-                    self.cleaned_data['password'])
+            phone_cleaned = self.cleaned_data.pop('phone')
+            if not self.cleaned_data['username']:
+                self.cleaned_data['username'] = uuid.uuid4().hex
+            self.cleaned_data['password'] = make_password(
+                self.cleaned_data['password'])
+            email = self.cleaned_data.get('email', None)
 
+            with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
                 PhoneNumber.objects.create(
                     user=user,
                     phone=phone_cleaned)
+                if email is not None:
+                    EmailAddress.objects.create(
+                        user=user,
+                        email=email
+                    )
         except DatabaseError as e:
             if 'UNIQUE constraint' in e.args[0]:
                 if 'phone' in e.args[0]:
@@ -83,3 +89,36 @@ class PhoneValidationForm(forms.Form):
 
 class UsernameValidationForm(forms.Form):
     username = forms.CharField(validators=[validate_username])
+
+
+# class PasswordResetForm(forms.Form):
+#     login = forms.CharField()
+#
+#     @staticmethod
+#     def get_users_and_method(self, login):
+#         lookup_obj = Q()
+#
+#         is_phone = False
+#         if PhoneValidationForm({'phone': login}).is_valid():
+#             lookup_obj |= Q(phonenumber__phone=login)
+#             is_phone = True
+#
+#         if EmailValidationForm({'email': login}).is_valid():
+#             lookup_obj |= Q(email=login)
+#
+#         return User.objects.filter(lookup_obj), is_phone
+#
+#     def save(self):
+#         login = self.cleaned_data.get('login', None)
+#         if login is not None:
+#             users, is_phone = self.get_users_and_method(login)
+#
+#             if users:
+#                 if is_phone:
+#                     # only one user returned
+#                     pass
+#                 else:
+#                     # many users may be returned
+#                     pass
+#             else:
+#                 pass

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from phone_auth.models import PhoneNumber
+from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.utils import login_method_allow
 
 
@@ -27,6 +27,7 @@ class AccountTests(TestCase):
 
         cls.user = User.objects.create(**user_data)
         PhoneNumber.objects.create(user=cls.user, phone=phone)
+        EmailAddress.objects.create(user=cls.user, email=user_data['email'])
 
     def test_register(self):
 
@@ -44,10 +45,13 @@ class AccountTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
         user = User.objects.latest('id')
-        phone = user.phonenumber.phone
+        phone = user.phonenumber_set.latest('id').phone
+        email = user.emailaddress_set.latest('id').email
+
         self.assertEqual(
             f'+{phone.country_code}{phone.national_number}',
             data['phone'])
+        self.assertEqual(email, data['email'])
         self.assertTrue(check_password(data['password'], user.password))
         self.assertEqual(user.username, data['username'])
         self.assertEqual(user.email, data['email'])
