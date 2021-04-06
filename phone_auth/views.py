@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.views import (PasswordResetCompleteView,
+                                       PasswordResetConfirmView,
+                                       PasswordResetDoneView)
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
-from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
 from .forms import LoginForm, PasswordResetForm, RegisterForm
@@ -67,14 +68,14 @@ class CustomPasswordResetView(FormView):
         return super().form_valid(form)
 
 
-class CustomPasswordResetDoneView(TemplateView):
+class CustomPasswordResetDoneView(PasswordResetDoneView):
     template_name = 'phone_auth/password_reset_done.html'
-    title = _('Password reset sent')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({
-            'title': self.title,
-            **(self.extra_context or {})
-        })
-        return context
+
+class CustomPasswordConfirmView(PasswordResetConfirmView):
+    template_name = 'phone_auth/password_reset_confirm.html'
+    success_url = reverse_lazy('phone_auth:custom_pass_reset_complete')
+
+
+class CustomPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'phone_auth/password_reset_complete.html'
