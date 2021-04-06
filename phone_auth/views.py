@@ -13,7 +13,7 @@ from .forms import LoginForm, PasswordResetForm, RegisterForm
 
 class RegisterView(FormView):
     form_class = RegisterForm
-    template_name = 'register.html'
+    template_name = 'phone_auth/register.html'
     success_url = '/'
 
     @method_decorator(csrf_protect)
@@ -30,7 +30,7 @@ class RegisterView(FormView):
 
 class LoginView(FormView):
     form_class = LoginForm
-    template_name = 'login.html'
+    template_name = 'phone_auth/login.html'
     success_url = '/'
 
     @method_decorator(csrf_protect)
@@ -55,7 +55,7 @@ class LoginView(FormView):
 
 class CustomPasswordResetView(FormView):
     form_class = PasswordResetForm
-    template_name = 'password_reset.html'
+    template_name = 'phone_auth/password_reset.html'
     success_url = reverse_lazy('phone_auth:custom_pass_reset_done')
 
     @method_decorator(csrf_protect)
@@ -68,7 +68,7 @@ class CustomPasswordResetView(FormView):
 
 
 class CustomPasswordResetDoneView(TemplateView):
-    template_name = 'password_reset_done.html'
+    template_name = 'phone_auth/password_reset_done.html'
     title = _('Password reset sent')
 
     def get_context_data(self, **kwargs):
