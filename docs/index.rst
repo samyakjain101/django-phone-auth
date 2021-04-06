@@ -11,6 +11,8 @@ Welcome to django-phone-auth's documentation!
    :caption: Contents:
 
    installation
+   configuration
+   templates
 
 
 
