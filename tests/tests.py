@@ -31,7 +31,7 @@ class AccountTests(TestCase):
 
     def test_register(self):
 
-        url = reverse('phone_auth:register')
+        url = reverse('phone_auth:phone_register')
         data = {
             "phone": "+919999999999",
             "username": "test1",
@@ -59,8 +59,8 @@ class AccountTests(TestCase):
         self.assertEqual(user.last_name, data['last_name'])
 
     def test_login(self):
-        url = reverse('phone_auth:login')
-        url_logout = reverse('phone_auth:logout')
+        url = reverse('phone_auth:phone_login')
+        url_logout = reverse('phone_auth:phone_logout')
 
         for login_method in ['phone', 'email', 'username']:
             # Login
@@ -87,7 +87,7 @@ class AccountTests(TestCase):
 
     def test_logout(self):
         # Login
-        url = reverse('phone_auth:login')
+        url = reverse('phone_auth:phone_login')
         credentials = {
             "login": self.data['phone'],
             "password": self.data["password"]
@@ -96,7 +96,7 @@ class AccountTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # Logout
-        url = reverse('phone_auth:logout')
+        url = reverse('phone_auth:phone_logout')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
@@ -106,7 +106,7 @@ class AccountTests(TestCase):
             else '/')
 
     def test_password_reset_view(self):
-        url = reverse('phone_auth:custom_pass_reset')
+        url = reverse('phone_auth:phone_password_reset')
 
         for method in ['phone', 'email']:
             data = {
@@ -116,6 +116,6 @@ class AccountTests(TestCase):
             self.assertEqual(response.status_code, 302)
 
     def test_password_reset_done_view(self):
-        url = reverse('phone_auth:custom_pass_reset_done')
+        url = reverse('phone_auth:phone_password_reset_done')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

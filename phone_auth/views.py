@@ -1,6 +1,7 @@
-from django.conf import settings
 from django.contrib.auth import authenticate, login
-from django.shortcuts import redirect, render
+from django.contrib.auth.views import LoginView
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
@@ -11,14 +12,14 @@ from django.views.generic.edit import FormView
 from .forms import LoginForm, PasswordResetForm, RegisterForm
 
 
-class RegisterView(FormView):
+class PhoneRegisterView(FormView):
     form_class = RegisterForm
     template_name = 'phone_auth/register.html'
     success_url = '/'
 
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
-        return super(RegisterView, self).dispatch(*args, **kwargs)
+        return super(PhoneRegisterView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
         form.save()
@@ -28,35 +29,29 @@ class RegisterView(FormView):
         return super().form_valid(form)
 
 
-class LoginView(FormView):
+class PhoneLoginView(LoginView):
+    """
+    Display the login form and handle the login action.
+    """
     form_class = LoginForm
     template_name = 'phone_auth/login.html'
-    success_url = '/'
-
-    @method_decorator(csrf_protect)
-    def dispatch(self, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            return redirect(
-                settings.LOGIN_REDIRECT_URL
-                if settings.LOGIN_REDIRECT_URL is not None
-                else '/')
-        return super(LoginView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
+        """Security check complete. Log the user in."""
         user = authenticate(self.request, **form.cleaned_data)
         if user is not None:
             login(self.request, user)
         else:
             form.add_error('login', 'Invalid Credentials')
             return render(
-                self.request, 'login.html', context={'form': form}, status=400)
-        return super().form_valid(form)
+                self.request, 'phone_auth/login.html', context={'form': form}, status=400)
+        return HttpResponseRedirect(self.get_success_url())
 
 
-class CustomPasswordResetView(FormView):
+class PhonePasswordResetView(FormView):
     form_class = PasswordResetForm
     template_name = 'phone_auth/password_reset.html'
-    success_url = reverse_lazy('phone_auth:custom_pass_reset_done')
+    success_url = reverse_lazy('phone_auth:phone_password_reset_done')
 
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
@@ -67,7 +62,7 @@ class CustomPasswordResetView(FormView):
         return super().form_valid(form)
 
 
-class CustomPasswordResetDoneView(TemplateView):
+class PhonePasswordResetDoneView(TemplateView):
     template_name = 'phone_auth/password_reset_done.html'
     title = _('Password reset sent')
 

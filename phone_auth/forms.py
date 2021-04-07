@@ -81,6 +81,9 @@ class LoginForm(forms.Form):
     login = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput())
 
+    def __init__(self, request=None, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+
 
 class EmailValidationForm(forms.Form):
     email = forms.EmailField()
