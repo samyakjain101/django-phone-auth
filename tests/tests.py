@@ -1,8 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.utils import login_method_allow
@@ -29,7 +32,7 @@ class AccountTests(TestCase):
         PhoneNumber.objects.create(user=cls.user, phone=phone)
         EmailAddress.objects.create(user=cls.user, email=user_data['email'])
 
-    def test_register(self):
+    def test_phone_register_view(self):
 
         url = reverse('phone_auth:phone_register')
         data = {
@@ -58,7 +61,7 @@ class AccountTests(TestCase):
         self.assertEqual(user.first_name, data['first_name'])
         self.assertEqual(user.last_name, data['last_name'])
 
-    def test_login(self):
+    def test_phone_login_view(self):
         url = reverse('phone_auth:phone_login')
         url_logout = reverse('phone_auth:phone_logout')
 
@@ -85,7 +88,7 @@ class AccountTests(TestCase):
 
             self.assertFalse(response.wsgi_request.user.is_authenticated)
 
-    def test_logout(self):
+    def test_phone_logout_view(self):
         # Login
         url = reverse('phone_auth:phone_login')
         credentials = {
@@ -105,7 +108,7 @@ class AccountTests(TestCase):
             if settings.LOGOUT_REDIRECT_URL is not None
             else '/')
 
-    def test_password_reset_view(self):
+    def test_phone_password_reset_view(self):
         url = reverse('phone_auth:phone_password_reset')
 
         for method in ['phone', 'email']:
@@ -115,7 +118,24 @@ class AccountTests(TestCase):
             response = self.client.post(url, data)
             self.assertEqual(response.status_code, 302)
 
-    def test_password_reset_done_view(self):
+    def test_phone_password_reset_done_view(self):
         url = reverse('phone_auth:phone_password_reset_done')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_phone_password_reset_confirm_view(self):
+        # generate `uidb64` and `token`
+        credentials = {
+            'uidb64': urlsafe_base64_encode(force_bytes(self.user.pk)),
+            'token': default_token_generator.make_token(self.user)
+        }
+
+        url = reverse('phone_auth:phone_password_reset_confirm', kwargs=credentials)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url[-14:], '/set-password/')
+
+    def test_phone_password_reset_complete_view(self):
+        url = reverse('phone_auth:phone_password_reset_complete')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
