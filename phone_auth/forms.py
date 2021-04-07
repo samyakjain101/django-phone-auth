@@ -20,7 +20,10 @@ from .signals import reset_pass_mail, reset_pass_phone
 User = get_user_model()
 
 
-class RegisterForm(forms.Form):
+class PhoneRegisterForm(forms.Form):
+    """
+    Form for user registration
+    """
     phone = PhoneNumberField()
     username = forms.CharField(
         required=get_setting('REGISTER_USERNAME_REQUIRED', default=False),
@@ -80,27 +83,45 @@ class RegisterForm(forms.Form):
         return user
 
 
-class LoginForm(forms.Form):
+class PhoneLoginForm(forms.Form):
+    """
+    Form used for user login
+    """
     login = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput())
 
     def __init__(self, request=None, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
+        super(PhoneLoginForm, self).__init__(*request, *args, **kwargs)
 
 
 class EmailValidationForm(forms.Form):
+    """
+    Form to validate email field
+    """
     email = forms.EmailField()
 
 
 class PhoneValidationForm(forms.Form):
+    """
+    Form to validate phone field
+    """
     phone = PhoneNumberField()
 
 
 class UsernameValidationForm(forms.Form):
+    """
+    Form to validate username field
+    """
     username = forms.CharField(validators=[validate_username])
 
 
-class PasswordResetForm(forms.Form):
+class PhonePasswordResetForm(forms.Form):
+    """
+    Checks if the user with provided email/phone exists.
+    If provided email/phone exists, send reset_pass_email/reset_pass_phone
+    signal with user and URL (relative_path that is one-time use only link
+    to reset password) arguments.
+    """
     login = forms.CharField()
 
     @staticmethod
@@ -137,7 +158,6 @@ class PasswordResetForm(forms.Form):
                         "token": default_token_generator.make_token(user)
                     }
                 )
-                print(url)
                 if is_phone:
                     reset_pass_phone.send(sender=PhoneNumber, user=user, url=url)
                 else:
