@@ -7,6 +7,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
 from django.db.models import Q
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from phonenumber_field.formfields import PhoneNumberField
 
 from phone_auth.utils import get_setting, validate_username
@@ -127,8 +130,15 @@ class PasswordResetForm(forms.Form):
             user, is_phone = self.get_users_and_method(login)
 
             if user:
-                token = default_token_generator.make_token(user)
+                url = reverse(
+                    "phone_auth:pass_reset_confirm",
+                    kwargs={
+                        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "token": default_token_generator.make_token(user)
+                    }
+                )
+                print(url)
                 if is_phone:
-                    reset_pass_phone.send(sender=PhoneNumber, user=user, token=token)
+                    reset_pass_phone.send(sender=PhoneNumber, user=user, url=url)
                 else:
-                    reset_pass_mail.send(sender=EmailAddress, user=user, token=token)
+                    reset_pass_mail.send(sender=EmailAddress, user=user, url=url)
