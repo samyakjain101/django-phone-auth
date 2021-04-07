@@ -131,7 +131,7 @@ class PasswordResetForm(forms.Form):
 
             if user:
                 url = reverse(
-                    "phone_auth:pass_reset_confirm",
+                    "phone_auth:phone_password_reset_confirm",
                     kwargs={
                         "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
                         "token": default_token_generator.make_token(user)
