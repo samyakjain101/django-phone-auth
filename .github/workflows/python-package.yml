@@ -36,12 +36,5 @@ jobs:
     - name: Test
       run: |
         tox
-
-    - name: Install coveralls
-      run: python -m pip install coveralls
-
-    - name: Upload coverage data to coveralls.io
-      run: coveralls
-
-    - name: Report coverage to coveralls.io
-      run: coveralls --finish
+        python -m pip install coveralls
+        coveralls
