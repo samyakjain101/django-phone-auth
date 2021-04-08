@@ -1,8 +1,9 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.views import (LoginView, PasswordChangeView,
+from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
+                                       PasswordChangeView,
                                        PasswordResetCompleteView,
                                        PasswordResetConfirmView,
-                                       PasswordResetDoneView, PasswordChangeDoneView)
+                                       PasswordResetDoneView)
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
