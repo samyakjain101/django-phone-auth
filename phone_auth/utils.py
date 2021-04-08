@@ -16,9 +16,8 @@ def get_setting(name, default=None):
 
 
 def get_username_regex():
-    """
-    Username should be alphanumeric and in lowercase
-    """
+    """Username should be alphanumeric and in lowercase"""
+
     return r'^[a-z0-9]{4,30}$'
 
 

@@ -9,6 +9,7 @@ from django.utils.http import urlsafe_base64_encode
 
 from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.utils import login_method_allow
+from django.contrib.auth import authenticate
 
 
 class AccountTests(TestCase):
@@ -65,6 +66,7 @@ class AccountTests(TestCase):
         url = reverse('phone_auth:phone_login')
         url_logout = reverse('phone_auth:phone_logout')
 
+        # With correct password
         for login_method in ['phone', 'email', 'username']:
             # Login
             if not login_method_allow(login_method):
@@ -86,6 +88,18 @@ class AccountTests(TestCase):
                 if settings.LOGOUT_REDIRECT_URL is not None
                 else '/')
 
+            self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+        # With incorrect password
+        for login_method in ['phone', 'email', 'username']:
+            if not login_method_allow(login_method):
+                continue
+            credentials = {
+                "login": self.data[login_method],
+                "password": 'inco@rrect0Pass'
+            }
+            response = self.client.post(url, credentials)
+            self.assertEqual(response.status_code, 400)
             self.assertFalse(response.wsgi_request.user.is_authenticated)
 
     def test_phone_logout_view(self):
@@ -139,3 +153,16 @@ class AccountTests(TestCase):
         url = reverse('phone_auth:phone_password_reset_complete')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_phone_change_password_view(self):
+        url = reverse('phone_auth:phone_change_password')
+        data = {
+            "old_password": self.data.get('password'),
+            "new_password": 'abcd@1234',
+            "confirm_password": 'abcd@1234'
+        }
+        response = self.client.post(url, data)
+
+        user = User.objects.get(email=self.data['email'])
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(check_password(data['new_password'], user.password))

@@ -35,7 +35,10 @@ class CustomAuthBackend(ModelBackend):
 
             if lookup_obj:
                 try:
-                    return User.objects.get(lookup_obj)
+                    user = User.objects.get(lookup_obj)
+                    if (user.check_password(password)
+                            and self.user_can_authenticate(user)):
+                        return user
                 except User.DoesNotExist:
                     return None
 

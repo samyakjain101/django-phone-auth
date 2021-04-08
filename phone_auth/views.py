@@ -1,7 +1,8 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.views import (LoginView, PasswordResetCompleteView,
+from django.contrib.auth.views import (LoginView, PasswordChangeView,
+                                       PasswordResetCompleteView,
                                        PasswordResetConfirmView,
-                                       PasswordResetDoneView)
+                                       PasswordResetDoneView, PasswordChangeDoneView)
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -13,9 +14,8 @@ from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm
 
 
 class PhoneRegisterView(FormView):
-    """
-    Display the register form and handle user registration
-    """
+    """Display the register form and handle user registration."""
+
     form_class = PhoneRegisterForm
     template_name = 'phone_auth/register.html'
     success_url = '/'
@@ -33,14 +33,14 @@ class PhoneRegisterView(FormView):
 
 
 class PhoneLoginView(LoginView):
-    """
-    Display the login form and handle the login action.
-    """
+    """Display the login form and handle the login action."""
+
     form_class = PhoneLoginForm
     template_name = 'phone_auth/login.html'
 
     def form_valid(self, form):
         """Security check complete. Log the user in."""
+
         user = authenticate(self.request, **form.cleaned_data)
         if user is not None:
             login(self.request, user)
@@ -52,9 +52,8 @@ class PhoneLoginView(LoginView):
 
 
 class PhonePasswordResetView(FormView):
-    """
-    Display the password reset form and handle password reset using phone/email.
-    """
+    """Display the password reset form and handle password reset using phone/email."""
+
     form_class = PhonePasswordResetForm
     template_name = 'phone_auth/password_reset.html'
     success_url = reverse_lazy('phone_auth:phone_password_reset_done')
@@ -69,23 +68,35 @@ class PhonePasswordResetView(FormView):
 
 
 class PhonePasswordResetDoneView(PasswordResetDoneView):
-    """
-    Renders a template
-    """
+    """Renders a template."""
+
     template_name = 'phone_auth/password_reset_done.html'
 
 
 class PhonePasswordConfirmView(PasswordResetConfirmView):
-    """
-    Accepts `uidb64` and `token` kwargs and validates them.
+    """Accepts `uidb64` and `token` kwargs and validates them.
+
     If valid, it renders a form for the user to reset the password.
     """
+
     template_name = 'phone_auth/password_reset_confirm.html'
     success_url = reverse_lazy('phone_auth:phone_password_reset_complete')
 
 
 class PhonePasswordResetCompleteView(PasswordResetCompleteView):
-    """
-    Renders a template
-    """
+    """Renders a template"""
+
     template_name = 'phone_auth/password_reset_complete.html'
+
+
+class PhoneChangePasswordView(PasswordChangeView):
+    """View to change password using old password"""
+
+    template_name = 'phone_auth/change_password.html'
+    success_url = reverse_lazy('phone_auth:phone_change_password_done')
+
+
+class PhoneChangePasswordDoneView(PasswordChangeDoneView):
+    """Renders a template"""
+
+    template_name = 'phone_auth/change_password_done.html'

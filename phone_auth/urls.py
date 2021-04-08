@@ -1,9 +1,10 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from .views import (PhoneLoginView, PhonePasswordConfirmView,
-                    PhonePasswordResetCompleteView, PhonePasswordResetDoneView,
-                    PhonePasswordResetView, PhoneRegisterView)
+from .views import (PhoneChangePasswordView, PhoneLoginView,
+                    PhonePasswordConfirmView, PhonePasswordResetCompleteView,
+                    PhonePasswordResetDoneView, PhonePasswordResetView,
+                    PhoneRegisterView, PhoneChangePasswordDoneView)
 
 app_name = 'phone_auth'
 
@@ -17,4 +18,6 @@ urlpatterns = [
         'password_reset_confirm/<uidb64>/<token>/',
         PhonePasswordConfirmView.as_view(), name='phone_password_reset_confirm'),
     path('password_reset_complete/', PhonePasswordResetCompleteView.as_view(), name='phone_password_reset_complete'),
+    path('change_password/', PhoneChangePasswordView.as_view(), name='phone_change_password'),
+    path('change_password_done/', PhoneChangePasswordDoneView.as_view(), name='phone_change_password_done'),
 ]
