@@ -1,0 +1,22 @@
+{% extends "phone_auth/base.html" %}
+
+{% block title_block %}
+    User Verification
+{% endblock title_block %}
+
+{% block body_block %}
+
+    {% for email_obj in email_addresses %}
+        <div class="">{{ email_obj.email }} {{ email_obj.is_verified }}</div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ email_obj.email }}">
+            <input type="submit" value="Verify">
+        </form>
+    {% endfor %}
+
+    {% for phone_obj in phone_numbers %}
+        <div class="">{{ phone_obj.phone }} {{ phone_obj.is_verified }}</div>
+    {% endfor %}
+
+{% endblock body_block %}

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator

@@ -8,8 +8,10 @@ User = get_user_model()
 class PhoneNumber(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone = PhoneNumberField(unique=True, blank=False)
+    is_verified = models.BooleanField(default=False)
 
 
 class EmailAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField(unique=True, blank=False)
+    is_verified = models.BooleanField(default=False)

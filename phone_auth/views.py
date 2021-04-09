@@ -10,8 +10,10 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic.edit import FormView
-
-from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm
+from django.views.generic import View
+from .models import EmailAddress, PhoneNumber
+from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm, EmailValidationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class PhoneRegisterView(FormView):
@@ -101,3 +103,37 @@ class PhoneChangePasswordDoneView(PasswordChangeDoneView):
     """Renders a template"""
 
     template_name = 'phone_auth/change_password_done.html'
+
+
+# class PhoneAndEmailVerificationView(LoginRequiredMixin, View):
+#     """Display all email-addresses and phone-numbers associated with user
+#     account with verification status.
+#     """
+#
+#     template_name = 'phone_auth/phone_and_email_verification.html'
+#
+#     def get(self, request):
+#         context = {
+#             'email_addresses': self.request.user.emailaddress_set.all(),
+#             'phone_numbers': self.request.user.phonenumber_set.all()
+#         }
+#         return render(request, template_name=self.template_name, context=context)
+#
+#     def post(self, request):
+#
+#         if request.POST.get('email', False):
+#             form = EmailValidationForm(request.POST)
+#
+#             if form.is_valid():
+#                 email = form.cleaned_data.get('email')
+#                 try:
+#                     email_obj = EmailAddress.objects.get(email__iexact=email)
+#                     if email_obj.is_verified:
+#                         return  # email is already verified
+#
+#                 except EmailAddress.DoesNotExist:
+#                     # In this case say email sent successfully,
+#                     # to avoid user enumeration attack
+#                     pass
+#
+#         return render(request, template_name=self.template_name)
