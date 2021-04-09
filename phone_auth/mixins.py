@@ -10,3 +10,21 @@ class AnonymousRequiredMixin(AccessMixin):
         if request.user.is_anonymous:
             return super().dispatch(request, *args, **kwargs)
         return redirect(settings.LOGIN_REDIRECT_URL if settings.LOGIN_REDIRECT_URL else "/")
+
+
+class VerifiedPhoneRequiredMixin(AccessMixin):
+    """Verify that the user has verified phone."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.phonenumber_set.filter(is_verified=True).exists():
+            return super().dispatch(request, *args, **kwargs)
+        return redirect(settings.LOGIN_REDIRECT_URL if settings.LOGIN_REDIRECT_URL else "/")
+
+
+class VerifiedEmailRequiredMixin(AccessMixin):
+    """Verify that the user has verified email."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.emailaddress_set.filter(is_verified=True).exists():
+            return super().dispatch(request, *args, **kwargs)
+        return redirect(settings.LOGIN_REDIRECT_URL if settings.LOGIN_REDIRECT_URL else "/")
