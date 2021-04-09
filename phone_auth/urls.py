@@ -21,4 +21,5 @@ urlpatterns = [
     path('change_password/', PhoneChangePasswordView.as_view(), name='phone_change_password'),
     path('change_password_done/', PhoneChangePasswordDoneView.as_view(), name='phone_change_password_done'),
     # path('user_verification/', PhoneAndEmailVerificationView.as_view(), name='phone_email_verification'),
+
 ]
