@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.generic import View
 from django.views.generic.edit import FormView
 
+from phone_auth.mixins import AnonymousRequiredMixin
+
 from .forms import (EmailValidationForm, PhoneLoginForm,
                     PhonePasswordResetForm, PhoneRegisterForm,
                     PhoneValidationForm)
@@ -42,7 +44,7 @@ class PhoneRegisterView(FormView):
         return super().form_valid(form)
 
 
-class PhoneLoginView(LoginView):
+class PhoneLoginView(AnonymousRequiredMixin, LoginView):
     """Display the login form and handle the login action."""
 
     form_class = PhoneLoginForm

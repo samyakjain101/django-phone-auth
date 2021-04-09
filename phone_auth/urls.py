@@ -22,6 +22,7 @@ urlpatterns = [
     path('password_reset_complete/', PhonePasswordResetCompleteView.as_view(), name='phone_password_reset_complete'),
     path('change_password/', PhoneChangePasswordView.as_view(), name='phone_change_password'),
     path('change_password_done/', PhoneChangePasswordDoneView.as_view(), name='phone_change_password_done'),
+
     path('user_verification/', PhoneEmailVerificationView.as_view(), name='phone_email_verification'),
     path(
         'user_verification_confirm/<uidb64>/<token>/',
