@@ -6,23 +6,21 @@ from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
                                        PasswordResetConfirmView,
                                        PasswordResetDoneView)
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.decorators.csrf import csrf_protect
 from django.views.generic import View
 from django.views.generic.edit import FormView
 
-from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm
-
-from .forms import EmailValidationForm, PhoneValidationForm
+from .forms import (EmailValidationForm, PhoneLoginForm,
+                    PhonePasswordResetForm, PhoneRegisterForm,
+                    PhoneValidationForm)
 from .models import EmailAddress, PhoneNumber
-from .tokens import phone_token_generator
 from .signals import verify_email, verify_phone
-from django.urls import reverse
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.shortcuts import redirect
+from .tokens import phone_token_generator
 
 
 class PhoneRegisterView(FormView):
