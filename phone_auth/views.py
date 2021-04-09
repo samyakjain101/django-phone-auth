@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login
+# from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
                                        PasswordChangeView,
                                        PasswordResetCompleteView,
@@ -9,11 +10,13 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
+# from django.views.generic import View
 from django.views.generic.edit import FormView
-from django.views.generic import View
-from .models import EmailAddress, PhoneNumber
-from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm, EmailValidationForm
-from django.contrib.auth.mixins import LoginRequiredMixin
+
+from .forms import PhoneLoginForm, PhonePasswordResetForm, PhoneRegisterForm
+
+# from .forms import EmailValidationForm
+# from .models import EmailAddress, PhoneNumber
 
 
 class PhoneRegisterView(FormView):
