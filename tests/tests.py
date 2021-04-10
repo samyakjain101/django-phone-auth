@@ -133,7 +133,6 @@ class AccountTests(TestCase):
 
         url = reverse('phone_auth:phone_password_reset_confirm', kwargs=credentials)
         response = self.client.get(url)
-        # print(response)
         self.assertEqual(response.status_code, 302)
         # self.assertEqual(response.url[-14:], '/set-password/')
 
