@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 
 
 def anonymous_required(function=None, redirect_url=settings.LOGIN_REDIRECT_URL):
@@ -30,7 +30,7 @@ def verified_email_required(
             if request.user.emailaddress_set.filter(is_verified=True).exists():
                 return view_func(request, *args, **kwargs)
             else:
-                raise PermissionDenied()
+                return redirect('phone_auth:phone_email_verification')
 
         return _wrapped_view
 
@@ -46,10 +46,10 @@ def verified_phone_required(
     def decorator(view_func):
         @login_required(redirect_field_name=redirect_field_name, login_url=login_url)
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.phone_set.filter(is_verified=True).exists():
+            if request.user.phonenumber_set.filter(is_verified=True).exists():
                 return view_func(request, *args, **kwargs)
             else:
-                raise PermissionDenied()
+                return redirect('phone_auth:phone_email_verification')
 
         return _wrapped_view
 
