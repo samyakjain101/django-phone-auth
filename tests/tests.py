@@ -1,19 +1,26 @@
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.views.generic import View
 
+from phone_auth.decorators import (anonymous_required, verified_email_required,
+                                   verified_phone_required)
+from phone_auth.mixins import (AnonymousRequiredMixin,
+                               VerifiedEmailRequiredMixin,
+                               VerifiedPhoneRequiredMixin)
 from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.tokens import phone_token_generator
 from phone_auth.utils import login_method_allow
 
 
 class AccountTests(TestCase):
-
     data = {
         "phone": "+919876543210",
         "username": "test",
@@ -30,8 +37,8 @@ class AccountTests(TestCase):
         user_data['password'] = make_password(user_data['password'])
 
         cls.user = User.objects.create(**user_data)
-        PhoneNumber.objects.create(user=cls.user, phone=phone)
-        EmailAddress.objects.create(user=cls.user, email=user_data['email'])
+        cls.phone_obj = PhoneNumber.objects.create(user=cls.user, phone=phone)
+        cls.email_obj = EmailAddress.objects.create(user=cls.user, email=user_data['email'])
 
     def test_phone_register_view(self):
 
@@ -93,7 +100,7 @@ class AccountTests(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertFalse(response.wsgi_request.user.is_authenticated)
 
-    def test_phone_logout_view(self):
+    def test_phone_logouTview(self):
         # Login
         self.client.login(
             login=self.data['email'],
@@ -109,7 +116,7 @@ class AccountTests(TestCase):
             if settings.LOGOUT_REDIRECT_URL is not None
             else '/')
 
-    def test_phone_password_reset_view(self):
+    def test_phone_password_reseTview(self):
         url = reverse('phone_auth:phone_password_reset')
 
         for method in ['phone', 'email']:
@@ -199,4 +206,157 @@ class AccountTests(TestCase):
             'phone': self.data.get('phone')
         }
         response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_anonymous_required_decorator(self):
+
+        @anonymous_required
+        def tview(request):
+            return HttpResponse()
+
+        request = self.client.get('/').wsgi_request
+        self.assertTrue(request.user.is_anonymous)
+        response = tview(request)
+        self.assertEqual(response.status_code, 200)
+
+        # checking for logged in user
+        self.client.login(
+            login=self.data['email'],
+            password=self.data['password'])
+        request = self.client.get('/').wsgi_request
+        self.assertTrue(request.user.is_authenticated)
+        response = tview(request)
+        self.assertEqual(response.status_code, 302)
+
+        self.assertEqual(
+            response.url,
+            f'{settings.LOGIN_REDIRECT_URL}?{REDIRECT_FIELD_NAME}=/'
+            if settings.LOGIN_REDIRECT_URL is not None
+            else '/')
+
+    def test_verified_email_required_decorator(self):
+
+        @verified_email_required
+        def tview(request):
+            return HttpResponse()
+
+        self.client.login(
+            login=self.data['email'],
+            password=self.data['password'])
+        request = self.client.get('/').wsgi_request
+
+        # check with not verified email
+        response = tview(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse('phone_auth:phone_email_verification')
+        )
+
+        # check with verified email
+        self.email_obj.is_verified = True
+        self.email_obj.save()
+        response = tview(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_verified_phone_required_decorator(self):
+
+        @verified_phone_required
+        def tview(request):
+            return HttpResponse()
+
+        self.client.login(
+            login=self.data['phone'],
+            password=self.data['password'])
+        request = self.client.get('/').wsgi_request
+
+        # check with not verified phone
+        response = tview(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse('phone_auth:phone_email_verification')
+        )
+
+        # check with verified email
+        self.phone_obj.is_verified = True
+        self.phone_obj.save()
+        response = tview(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_anonymous_required_mixin(self):
+
+        class Tview(AnonymousRequiredMixin, View):
+
+            def get(self, request, *args, **kwargs):
+                return HttpResponse()
+
+        request = self.client.get('/').wsgi_request
+        response = Tview.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+        # checking for logged in user
+        self.client.login(
+            login=self.data['email'],
+            password=self.data['password'])
+        request = self.client.get('/').wsgi_request
+        response = Tview.as_view()(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            settings.LOGIN_REDIRECT_URL
+            if settings.LOGIN_REDIRECT_URL is not None
+            else '/')
+
+    def test_verified_phone_required_mixin(self):
+
+        class Tview(VerifiedPhoneRequiredMixin, View):
+
+            def get(self, request, *args, **kwargs):
+                return HttpResponse()
+
+        self.client.login(
+            login=self.data['phone'],
+            password=self.data['password'])
+
+        request = self.client.get('/').wsgi_request
+
+        # check with not verified phone
+        response = Tview.as_view()(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse('phone_auth:phone_email_verification')
+        )
+
+        # check with verified phone
+        self.phone_obj.is_verified = True
+        self.phone_obj.save()
+        response = Tview.as_view()(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_verified_email_required_mixin(self):
+
+        class Tview(VerifiedEmailRequiredMixin, View):
+
+            def get(self, request, *args, **kwargs):
+                return HttpResponse()
+
+        self.client.login(
+            login=self.data['email'],
+            password=self.data['password'])
+        request = self.client.get('/').wsgi_request
+
+        # check with not verified email
+        response = Tview.as_view()(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse('phone_auth:phone_email_verification')
+        )
+
+        # check with verified email
+        self.email_obj.is_verified = True
+        self.email_obj.save()
+        response = Tview.as_view()(request)
         self.assertEqual(response.status_code, 200)
