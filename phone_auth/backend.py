@@ -1,44 +1,45 @@
-from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
-from .forms import (
-    PhoneValidationForm, EmailValidationForm,
-    UsernameValidationForm)
+from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+
 from phone_auth.utils import login_method_allow
+
+from .forms import (EmailValidationForm, PhoneValidationForm,
+                    UsernameValidationForm)
 
 User = get_user_model()
 
 
 class CustomAuthBackend(ModelBackend):
 
-    def authenticate(self, request, login=None, password=None):
+    def authenticate(self, request, login=None, password=None, **kwargs):
 
         if login and password:
 
             lookup_obj = Q()
 
-            if (login_method_allow('email') and
-                    EmailValidationForm({'email': login}).is_valid()):
-                lookup_obj |= Q(email=login)
-
-            if (login_method_allow('username') and
-                    UsernameValidationForm({'username': login}).is_valid()):
-                lookup_obj |= Q(username=login)
-
             if (login_method_allow('phone') and
                     PhoneValidationForm({'phone': login}).is_valid()):
                 lookup_obj |= Q(phonenumber__phone=login)
 
-            # By default email is set to unique=False. So,
-            # multiple users may be returned. In this case,
-            # first user which matches both email and password
-            # will be returned
+            elif (login_method_allow('email') and
+                    EmailValidationForm({'email': login}).is_valid()):
+                lookup_obj |= Q(emailaddress__email=login)
+
+            elif (login_method_allow('username') and
+                    UsernameValidationForm({'username': login}).is_valid()):
+                lookup_obj |= Q(username=login)
+
+            else:
+                return None
+
             if lookup_obj:
-                users = User.objects.filter(lookup_obj)
-                for user in users:
+                try:
+                    user = User.objects.get(lookup_obj)
                     if (user.check_password(password)
                             and self.user_can_authenticate(user)):
                         return user
-            return None
+                except User.DoesNotExist:
+                    return None
 
         return None

@@ -1,18 +1,28 @@
 import uuid
+
 from django import forms
-from django.db import DatabaseError, transaction
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import password_validation
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from phone_auth.utils import get_setting, validate_username
+from django.db import DatabaseError, transaction
+from django.db.models import Q
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from phonenumber_field.formfields import PhoneNumberField
-from .models import PhoneNumber
+
+from phone_auth.utils import get_setting, validate_username
+
+from .models import EmailAddress, PhoneNumber
+from .signals import reset_pass_mail, reset_pass_phone
 
 User = get_user_model()
 
 
-class RegisterForm(forms.Form):
+class PhoneRegisterForm(forms.Form):
+    """Form for user registration"""
+
     phone = PhoneNumberField()
     username = forms.CharField(
         required=get_setting('REGISTER_USERNAME_REQUIRED', default=False),
@@ -43,17 +53,23 @@ class RegisterForm(forms.Form):
 
     def save(self):
         try:
-            with transaction.atomic():
-                phone_cleaned = self.cleaned_data.pop('phone')
-                if not self.cleaned_data['username']:
-                    self.cleaned_data['username'] = uuid.uuid4().hex
-                self.cleaned_data['password'] = make_password(
-                    self.cleaned_data['password'])
+            phone_cleaned = self.cleaned_data.pop('phone')
+            if not self.cleaned_data['username']:
+                self.cleaned_data['username'] = uuid.uuid4().hex
+            self.cleaned_data['password'] = make_password(
+                self.cleaned_data['password'])
+            email = self.cleaned_data.get('email', None)
 
+            with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
                 PhoneNumber.objects.create(
                     user=user,
                     phone=phone_cleaned)
+                if email is not None:
+                    EmailAddress.objects.create(
+                        user=user,
+                        email=email
+                    )
         except DatabaseError as e:
             if 'UNIQUE constraint' in e.args[0]:
                 if 'phone' in e.args[0]:
@@ -66,18 +82,79 @@ class RegisterForm(forms.Form):
         return user
 
 
-class LoginForm(forms.Form):
+class PhoneLoginForm(forms.Form):
+    """Form used for user login"""
+
     login = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput())
 
+    def __init__(self, request=None, *args, **kwargs):
+        self.request = request
+        super(PhoneLoginForm, self).__init__(*args, **kwargs)
+
 
 class EmailValidationForm(forms.Form):
+    """Form to validate email field"""
+
     email = forms.EmailField()
 
 
 class PhoneValidationForm(forms.Form):
+    """Form to validate phone field"""
+
     phone = PhoneNumberField()
 
 
 class UsernameValidationForm(forms.Form):
+    """Form to validate username field"""
+
     username = forms.CharField(validators=[validate_username])
+
+
+class PhonePasswordResetForm(forms.Form):
+    """Checks if the user with provided email/phone exists.
+
+    If provided email/phone exists, send reset_pass_email/reset_pass_phone
+    signal with user and URL (relative_path that is one-time use only link
+    to reset password) arguments.
+    """
+    login = forms.CharField()
+
+    @staticmethod
+    def get_users_and_method(login):
+        lookup_obj = Q()
+
+        is_phone = False
+        if PhoneValidationForm({'phone': login}).is_valid():
+            lookup_obj |= Q(phonenumber__phone=login)
+            is_phone = True
+
+        elif EmailValidationForm({'email': login}).is_valid():
+            lookup_obj |= Q(emailaddress__email=login)
+
+        else:
+            return None, False
+
+        try:
+            user = User.objects.get(lookup_obj)
+            return user, is_phone
+        except User.DoesNotExist:
+            return None, False
+
+    def save(self):
+        login = self.cleaned_data.get('login', None)
+        if login is not None:
+            user, is_phone = self.get_users_and_method(login)
+
+            if user:
+                url = reverse(
+                    "phone_auth:phone_password_reset_confirm",
+                    kwargs={
+                        "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "token": default_token_generator.make_token(user)
+                    }
+                )
+                if is_phone:
+                    reset_pass_phone.send(sender=self.__class__, user=user, url=url)
+                else:
+                    reset_pass_mail.send(sender=self.__class__, user=user, url=url)

@@ -1,4 +1,5 @@
 import re
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -15,9 +16,8 @@ def get_setting(name, default=None):
 
 
 def get_username_regex():
-    """
-    Username should be alphanumeric and in lowercase
-    """
+    """Username should be alphanumeric and in lowercase"""
+
     return r'^[a-z0-9]{4,30}$'
 
 
@@ -25,12 +25,12 @@ def validate_username(username):
     if re.search(get_username_regex(), username) is None:
         raise ValidationError(
             _('%(username)s should be alphanumeric, lowercase and should\
-            contain atleast 4 and atmost 30 charachters'),
+            contain atleast 4 and atmost 30 characters'),
             params={'username': username},
         )
 
 
-class LOGIN_METHOD_EMPTY(Exception):
+class LoginMethodEmpty(Exception):
     """Exception raised if LOGIN_METHODS is set to
     empty set in settings
 
@@ -44,9 +44,9 @@ class LOGIN_METHOD_EMPTY(Exception):
 
 
 def login_method_allow(method):
-    LOGIN_METHODS = get_setting('LOGIN_METHODS', default={'phone'})
-    if not LOGIN_METHODS:
-        raise LOGIN_METHOD_EMPTY
-    if method in LOGIN_METHODS:
+    login_methods = get_setting('LOGIN_METHODS', default={'phone'})
+    if not login_methods:
+        raise LoginMethodEmpty
+    if method in login_methods:
         return True
     return False
