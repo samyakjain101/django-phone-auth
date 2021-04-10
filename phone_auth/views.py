@@ -25,7 +25,7 @@ from .signals import verify_email, verify_phone
 from .tokens import phone_token_generator
 
 
-class PhoneRegisterView(FormView):
+class PhoneRegisterView(AnonymousRequiredMixin, FormView):
     """Display the register form and handle user registration."""
 
     form_class = PhoneRegisterForm

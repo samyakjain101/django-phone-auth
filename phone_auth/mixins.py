@@ -18,7 +18,7 @@ class VerifiedPhoneRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         if request.user.phonenumber_set.filter(is_verified=True).exists():
             return super().dispatch(request, *args, **kwargs)
-        return redirect(settings.LOGIN_REDIRECT_URL if settings.LOGIN_REDIRECT_URL else "/")
+        return redirect('phone_auth:phone_email_verification')
 
 
 class VerifiedEmailRequiredMixin(AccessMixin):
@@ -27,4 +27,4 @@ class VerifiedEmailRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         if request.user.emailaddress_set.filter(is_verified=True).exists():
             return super().dispatch(request, *args, **kwargs)
-        return redirect(settings.LOGIN_REDIRECT_URL if settings.LOGIN_REDIRECT_URL else "/")
+        return redirect('phone_auth:phone_email_verification')
