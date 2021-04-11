@@ -61,7 +61,7 @@ class AccountTests(TestCase):
         email = user.emailaddress_set.latest('id').email
 
         self.assertEqual(
-            f'+{phone.country_code}{phone.national_number}',
+            phone.__str__(),
             data['phone'])
         self.assertEqual(email, data['email'])
         self.assertTrue(check_password(data['password'], user.password))

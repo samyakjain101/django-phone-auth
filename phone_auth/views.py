@@ -34,7 +34,7 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
 
     form_class = PhoneRegisterForm
     template_name = 'phone_auth/register.html'
-    success_url = '/'
+    success_url = reverse_lazy('phone_auth:phone_login')
 
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
@@ -44,7 +44,7 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
         form.save()
         if form.errors:
             return render(
-                self.request, 'register.html', context={'form': form})
+                self.request, 'phone_auth/register.html', context={'form': form})
         return super().form_valid(form)
 
 
@@ -151,7 +151,11 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
 
                     url = self._get_token_url(
                         email_obj=email_obj, phone_obj=None)
-                    verify_email.send(sender=self.__class__, user=request.user, url=url)
+                    verify_email.send(
+                        sender=self.__class__,
+                        user=request.user,
+                        url=url,
+                        email=email_obj.email)
                 except EmailAddress.DoesNotExist:
                     # In this case say email sent successfully
                     # to avoid user enumeration attack
@@ -170,7 +174,11 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
 
                     url = self._get_token_url(
                         email_obj=None, phone_obj=phone_obj)
-                    verify_phone.send(sender=self.__class__, user=request.user, url=url)
+                    verify_phone.send(
+                        sender=self.__class__,
+                        user=request.user,
+                        url=url,
+                        phone=phone_obj.phone.__str__())
                 except PhoneNumber.DoesNotExist:
                     pass
 
@@ -208,6 +216,7 @@ class PhoneEmailVerificationConfirmView(FormView):
 
     template_name = 'phone_auth/phone_email_verification_confirm.html'
 
+    # noinspection PyAttributeOutsideInit
     @method_decorator(sensitive_post_parameters())
     @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):

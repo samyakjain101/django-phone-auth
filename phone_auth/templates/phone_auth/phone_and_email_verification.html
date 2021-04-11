@@ -8,15 +8,24 @@
 
     {% for email_obj in email_addresses %}
         <div class="">{{ email_obj.email }} {{ email_obj.is_verified }}</div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="email" value="{{ email_obj.email }}">
-            <input type="submit" value="Verify">
-        </form>
+        {% if not email_obj.is_verified %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ email_obj.email }}">
+                <input type="submit" value="Verify">
+            </form>
+        {% endif %}
     {% endfor %}
 
     {% for phone_obj in phone_numbers %}
         <div class="">{{ phone_obj.phone }} {{ phone_obj.is_verified }}</div>
+        {% if not phone_obj.is_verified %}
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="phone" value="{{ phone_obj.phone }}">
+                <input type="submit" value="Verify">
+            </form>
+        {% endif %}
     {% endfor %}
 
 {% endblock body_block %}

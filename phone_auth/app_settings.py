@@ -2,6 +2,8 @@ import sys
 
 from django.conf import settings
 
+from .exceptions import AuthenticationMethodEmpty
+
 
 class AppSettings:
     class AuthenticationMethod:
@@ -16,7 +18,10 @@ class AppSettings:
             self.AuthenticationMethod.EMAIL,
             self.AuthenticationMethod.PHONE
         }
-        return self._setting("AUTHENTICATION_METHODS", default)
+        auth_methods = self._setting("AUTHENTICATION_METHODS", default)
+        if not auth_methods:
+            raise AuthenticationMethodEmpty
+        return auth_methods
 
     @property
     def REGISTER_USERNAME_REQUIRED(self):

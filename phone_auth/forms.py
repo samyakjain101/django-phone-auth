@@ -156,6 +156,6 @@ class PhonePasswordResetForm(forms.Form):
                     }
                 )
                 if is_phone:
-                    reset_pass_phone.send(sender=self.__class__, user=user, url=url)
+                    reset_pass_phone.send(sender=self.__class__, user=user, url=url, phone=login)
                 else:
-                    reset_pass_mail.send(sender=self.__class__, user=user, url=url)
+                    reset_pass_mail.send(sender=self.__class__, user=user, url=url, email=login)
