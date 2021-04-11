@@ -207,6 +207,43 @@ class AccountTests(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
 
+    def test_phone_email_verification_confirm_view(self):
+        # Email verification
+        self.assertFalse(self.email_obj.is_verified)
+        credentials = {
+            'idb64': urlsafe_base64_encode(
+                force_bytes(f'email{self.email_obj.pk}')),
+            'token': phone_token_generator(
+                email_address_obj=self.email_obj,
+                phone_number_obj=None).make_token(self.user)}
+        url = reverse(
+            'phone_auth:phone_email_verification_confirm',
+            kwargs=credentials)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            EmailAddress.objects.get(
+                pk=self.email_obj.pk).is_verified)
+
+        # Phone Verification
+        self.assertFalse(self.phone_obj.is_verified)
+        credentials = {
+            'idb64': urlsafe_base64_encode(
+                force_bytes(f'phone{self.phone_obj.pk}')),
+            'token': phone_token_generator(
+                email_address_obj=None,
+                phone_number_obj=self.phone_obj).make_token(self.user)}
+        url = reverse(
+            'phone_auth:phone_email_verification_confirm',
+            kwargs=credentials)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            PhoneNumber.objects.get(
+                pk=self.phone_obj.pk).is_verified)
+
     def test_anonymous_required_decorator(self):
 
         @anonymous_required
