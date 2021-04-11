@@ -36,7 +36,9 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
     template_name = 'phone_auth/register.html'
     success_url = reverse_lazy('phone_auth:phone_login')
 
+    @method_decorator(sensitive_post_parameters())
     @method_decorator(csrf_protect)
+    @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
         return super(PhoneRegisterView, self).dispatch(*args, **kwargs)
 
