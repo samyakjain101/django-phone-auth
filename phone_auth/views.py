@@ -208,7 +208,6 @@ class PhoneEmailVerificationConfirmView(FormView):
 
     template_name = 'phone_auth/phone_email_verification_confirm.html'
 
-    # noinspection PyAttributeOutsideInit
     @method_decorator(sensitive_post_parameters())
     @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):

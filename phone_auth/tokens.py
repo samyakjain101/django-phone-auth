@@ -2,6 +2,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
 class PhoneEmailVerificationTokenGenerator(PasswordResetTokenGenerator):
+    """Generate/Verify one-time use token for email/phone verification"""
 
     def __init__(self, email_address_obj, phone_number_obj):
         super(PhoneEmailVerificationTokenGenerator, self).__init__()

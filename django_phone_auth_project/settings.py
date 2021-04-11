@@ -82,12 +82,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# django-phone-auth settings
-REGISTER_USERNAME_REQUIRED = True
-REGISTER_EMAIL_REQUIRED = True
-REGISTER_FNAME_REQUIRED = True
-REGISTER_LNAME_REQUIRED = True
-LOGIN_METHODS = {'email', 'phone', 'username'}
 LOGOUT_REDIRECT_URL = '/'
 
 # django-debug-toolbar settings
