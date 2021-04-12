@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import AccessMixin
 from django.shortcuts import redirect
+
 from . import app_settings
 
 

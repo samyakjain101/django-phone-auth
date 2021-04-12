@@ -105,7 +105,6 @@ class AccountTests(TestCase):
         # Logout
         url = reverse('phone_auth:phone_logout')
         response = self.client.get(url)
-        print(response)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,

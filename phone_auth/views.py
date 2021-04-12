@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordChangeDoneView,
                                        PasswordChangeView,
                                        PasswordResetCompleteView,
                                        PasswordResetConfirmView,
@@ -21,6 +22,7 @@ from django.views.generic.edit import FormView
 
 from phone_auth.mixins import AnonymousRequiredMixin
 
+from . import app_settings
 from .forms import (EmailValidationForm, PhoneLoginForm,
                     PhonePasswordResetForm, PhoneRegisterForm,
                     PhoneValidationForm)
@@ -67,6 +69,11 @@ class PhoneLoginView(AnonymousRequiredMixin, LoginView):
             return render(
                 self.request, 'phone_auth/login.html', context={'form': form}, status=400)
         return HttpResponseRedirect(self.get_success_url())
+
+
+class PhoneLogoutView(LogoutView):
+    """Handle Logout"""
+    next_page = app_settings.LOGOUT_REDIRECT_URL
 
 
 class PhonePasswordResetView(FormView):

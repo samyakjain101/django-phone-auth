@@ -16,7 +16,7 @@ from phone_auth.validators import validate_username
 
 from . import app_settings
 from .models import EmailAddress, PhoneNumber
-from .signals import reset_pass_mail, reset_pass_phone
+from .signals import reset_password_email, reset_password_phone
 
 User = get_user_model()
 
@@ -156,6 +156,6 @@ class PhonePasswordResetForm(forms.Form):
                     }
                 )
                 if is_phone:
-                    reset_pass_phone.send(sender=self.__class__, user=user, url=url, phone=login)
+                    reset_password_phone.send(sender=self.__class__, user=user, url=url, phone=login)
                 else:
-                    reset_pass_mail.send(sender=self.__class__, user=user, url=url, email=login)
+                    reset_password_email.send(sender=self.__class__, user=user, url=url, email=login)
