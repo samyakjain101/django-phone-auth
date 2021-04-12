@@ -12,8 +12,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from phonenumber_field.formfields import PhoneNumberField
 
-from phone_auth.utils import get_setting, validate_username
+from phone_auth.validators import validate_username
 
+from . import app_settings
 from .models import EmailAddress, PhoneNumber
 from .signals import reset_pass_mail, reset_pass_phone
 
@@ -25,14 +26,14 @@ class PhoneRegisterForm(forms.Form):
 
     phone = PhoneNumberField()
     username = forms.CharField(
-        required=get_setting('REGISTER_USERNAME_REQUIRED', default=False),
+        required=app_settings.REGISTER_USERNAME_REQUIRED,
         validators=[validate_username])
     email = forms.EmailField(
-        required=get_setting('REGISTER_EMAIL_REQUIRED', default=False))
+        required=app_settings.REGISTER_EMAIL_REQUIRED)
     first_name = forms.CharField(
-        required=get_setting('REGISTER_FNAME_REQUIRED', default=False))
+        required=app_settings.REGISTER_FNAME_REQUIRED)
     last_name = forms.CharField(
-        required=get_setting('REGISTER_LNAME_REQUIRED', default=False))
+        required=app_settings.REGISTER_LNAME_REQUIRED)
     password = forms.CharField(widget=forms.PasswordInput())
 
     def _post_clean(self):
@@ -155,6 +156,6 @@ class PhonePasswordResetForm(forms.Form):
                     }
                 )
                 if is_phone:
-                    reset_pass_phone.send(sender=self.__class__, user=user, url=url)
+                    reset_pass_phone.send(sender=self.__class__, user=user, url=url, phone=login)
                 else:
-                    reset_pass_mail.send(sender=self.__class__, user=user, url=url)
+                    reset_pass_mail.send(sender=self.__class__, user=user, url=url, email=login)

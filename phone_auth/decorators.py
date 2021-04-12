@@ -27,7 +27,8 @@ def verified_email_required(
     def decorator(view_func):
         @login_required(redirect_field_name=redirect_field_name, login_url=login_url)
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.emailaddress_set.filter(is_verified=True).exists():
+            if (request.user.is_authenticated and
+                    request.user.emailaddress_set.filter(is_verified=True).exists()):
                 return view_func(request, *args, **kwargs)
             else:
                 return redirect('phone_auth:phone_email_verification')
@@ -46,7 +47,8 @@ def verified_phone_required(
     def decorator(view_func):
         @login_required(redirect_field_name=redirect_field_name, login_url=login_url)
         def _wrapped_view(request, *args, **kwargs):
-            if request.user.phonenumber_set.filter(is_verified=True).exists():
+            if (request.user.is_authenticated and
+                    request.user.phonenumber_set.filter(is_verified=True).exists()):
                 return view_func(request, *args, **kwargs)
             else:
                 return redirect('phone_auth:phone_email_verification')

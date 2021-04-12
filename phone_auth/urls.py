@@ -25,6 +25,6 @@ urlpatterns = [
 
     path('user_verification/', PhoneEmailVerificationView.as_view(), name='phone_email_verification'),
     path(
-        'user_verification_confirm/<uidb64>/<token>/',
+        'user_verification_confirm/<idb64>/<token>/',
         PhoneEmailVerificationConfirmView.as_view(), name='phone_email_verification_confirm'),
 ]

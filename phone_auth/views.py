@@ -5,13 +5,17 @@ from django.contrib.auth.views import (LoginView, PasswordChangeDoneView,
                                        PasswordResetCompleteView,
                                        PasswordResetConfirmView,
                                        PasswordResetDoneView)
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import gettext_lazy as _
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
 from django.views.generic.edit import FormView
 
@@ -30,9 +34,11 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
 
     form_class = PhoneRegisterForm
     template_name = 'phone_auth/register.html'
-    success_url = '/'
+    success_url = reverse_lazy('phone_auth:phone_login')
 
+    @method_decorator(sensitive_post_parameters())
     @method_decorator(csrf_protect)
+    @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
         return super(PhoneRegisterView, self).dispatch(*args, **kwargs)
 
@@ -40,7 +46,7 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
         form.save()
         if form.errors:
             return render(
-                self.request, 'register.html', context={'form': form})
+                self.request, 'phone_auth/register.html', context={'form': form})
         return super().form_valid(form)
 
 
@@ -145,9 +151,13 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
                     if email_obj.is_verified:
                         return redirect('phone_auth:phone_email_verification')
 
-                    token, url = self._get_token_url(
+                    url = self._get_token_url(
                         email_obj=email_obj, phone_obj=None)
-                    verify_email.send(sender=self.__class__, user=request.user, url=url)
+                    verify_email.send(
+                        sender=self.__class__,
+                        user=request.user,
+                        url=url,
+                        email=email_obj.email)
                 except EmailAddress.DoesNotExist:
                     # In this case say email sent successfully
                     # to avoid user enumeration attack
@@ -164,9 +174,13 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
                     if phone_obj.is_verified:
                         return redirect('phone_auth:phone_email_verification')
 
-                    token, url = self._get_token_url(
+                    url = self._get_token_url(
                         email_obj=None, phone_obj=phone_obj)
-                    verify_phone.send(sender=self.__class__, user=request.user, url=url)
+                    verify_phone.send(
+                        sender=self.__class__,
+                        user=request.user,
+                        url=url,
+                        phone=phone_obj.phone.__str__())
                 except PhoneNumber.DoesNotExist:
                     pass
 
@@ -179,12 +193,87 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
         url = reverse(
             "phone_auth:phone_email_verification_confirm",
             kwargs={
-                "uidb64": urlsafe_base64_encode(force_bytes(self.request.user.pk)),
+                "idb64": self._get_email_phone_b64(email_obj, phone_obj),
                 "token": token
             }
         )
-        return token, url
+        return url
+
+    @staticmethod
+    def _get_email_phone_b64(email_obj, phone_obj):
+        if email_obj is not None:
+            return urlsafe_base64_encode(
+                force_bytes(f'email{email_obj.pk}'))
+        if phone_obj is not None:
+            return urlsafe_base64_encode(
+                force_bytes(f'phone{phone_obj.pk}'))
 
 
 class PhoneEmailVerificationConfirmView(FormView):
-    pass
+    """Accepts `idb64` and `token` kwargs and validates them.
+
+    If valid, it set is_verified to True of PhoneNumber/EmailAdress
+    instance.
+    """
+
+    template_name = 'phone_auth/phone_email_verification_confirm.html'
+
+    # noinspection PyAttributeOutsideInit
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(never_cache)
+    def dispatch(self, *args, **kwargs):
+        assert 'idb64' in kwargs and 'token' in kwargs
+
+        self.validlink = False
+        email_obj, phone_obj = self.get_email_or_phone_obj(kwargs['idb64'])
+
+        if email_obj is not None:
+            user = email_obj.user
+        elif phone_obj is not None:
+            user = phone_obj.user
+        else:
+            user = None
+
+        if user:
+            is_valid_token = phone_token_generator(
+                email_address_obj=email_obj,
+                phone_number_obj=phone_obj).check_token(user, kwargs['token'])
+
+            if is_valid_token:
+                if email_obj is not None:
+                    email_obj.is_verified = True
+                    email_obj.save()
+                if phone_obj is not None:
+                    phone_obj.is_verified = True
+                    phone_obj.save()
+                self.validlink = True
+
+        # Display the "Verification Failed/Passed" page.
+        return self.render_to_response(self.get_context_data())
+
+    @staticmethod
+    def get_email_or_phone_obj(idb64):
+        email_obj = phone_obj = None
+        try:
+            # urlsafe_base64_decode() decodes to bytestring
+            uid = urlsafe_base64_decode(idb64).decode()
+            method = uid[:5]
+            pk = int(uid[5:])
+            if method == 'email':
+                email_obj = EmailAddress.objects.get(pk=pk)
+            elif uid[:5] == 'phone':
+                phone_obj = PhoneNumber.objects.get(pk=pk)
+
+        except (TypeError, ValueError, OverflowError,
+                EmailAddress.DoesNotExist, PhoneNumber.DoesNotExist,
+                ValidationError):
+            pass
+        return email_obj, phone_obj
+
+    def get_context_data(self, **kwargs):
+        context = {}
+        if self.validlink:
+            context['title'] = _('Verification successful')
+        else:
+            context['title'] = _('Verification failed')
+        return context

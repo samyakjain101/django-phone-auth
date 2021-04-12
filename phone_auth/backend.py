@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 
-from phone_auth.utils import login_method_allow
-
+from . import app_settings
+from .app_settings import AuthenticationMethod
 from .forms import (EmailValidationForm, PhoneValidationForm,
                     UsernameValidationForm)
 
@@ -12,24 +12,28 @@ User = get_user_model()
 
 class CustomAuthBackend(ModelBackend):
 
-    def authenticate(self, request, login=None, password=None, **kwargs):
+    def authenticate(self, request, **kwargs):
+        """Authenticate with phone/email/username and password """
+
+        login = kwargs.get(
+            'login',
+            kwargs.get('username', None))
+        password = kwargs.get('password', None)
 
         if login and password:
 
             lookup_obj = Q()
 
-            if (login_method_allow('phone') and
+            authentication_methods = app_settings.AUTHENTICATION_METHODS
+            if (AuthenticationMethod.PHONE in authentication_methods and
                     PhoneValidationForm({'phone': login}).is_valid()):
                 lookup_obj |= Q(phonenumber__phone=login)
-
-            elif (login_method_allow('email') and
+            elif (AuthenticationMethod.EMAIL in authentication_methods and
                     EmailValidationForm({'email': login}).is_valid()):
                 lookup_obj |= Q(emailaddress__email=login)
-
-            elif (login_method_allow('username') and
+            elif (AuthenticationMethod.USERNAME in authentication_methods and
                     UsernameValidationForm({'username': login}).is_valid()):
                 lookup_obj |= Q(username=login)
-
             else:
                 return None
 

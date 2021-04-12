@@ -10,6 +10,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic import View
 
+from phone_auth import app_settings
+from phone_auth.app_settings import AuthenticationMethod
 from phone_auth.decorators import (anonymous_required, verified_email_required,
                                    verified_phone_required)
 from phone_auth.mixins import (AnonymousRequiredMixin,
@@ -17,7 +19,6 @@ from phone_auth.mixins import (AnonymousRequiredMixin,
                                VerifiedPhoneRequiredMixin)
 from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.tokens import phone_token_generator
-from phone_auth.utils import login_method_allow
 
 
 class AccountTests(TestCase):
@@ -60,7 +61,7 @@ class AccountTests(TestCase):
         email = user.emailaddress_set.latest('id').email
 
         self.assertEqual(
-            f'+{phone.country_code}{phone.national_number}',
+            phone.__str__(),
             data['phone'])
         self.assertEqual(email, data['email'])
         self.assertTrue(check_password(data['password'], user.password))
@@ -71,14 +72,12 @@ class AccountTests(TestCase):
 
     def test_phone_login_view(self):
         url = reverse('phone_auth:phone_login')
+        authentication_methods = app_settings.AUTHENTICATION_METHODS
 
         # With correct password
-        for login_method in ['phone', 'email', 'username']:
-            # Login
-            if not login_method_allow(login_method):
-                continue
+        for auth_method in authentication_methods:
             credentials = {
-                "login": self.data[login_method],
+                "login": self.data[auth_method],
                 "password": self.data["password"]
             }
             response = self.client.post(url, credentials)
@@ -89,11 +88,9 @@ class AccountTests(TestCase):
             self.client.logout()
 
         # With incorrect password
-        for login_method in ['phone', 'email', 'username']:
-            if not login_method_allow(login_method):
-                continue
+        for auth_method in authentication_methods:
             credentials = {
-                "login": self.data[login_method],
+                "login": self.data[auth_method],
                 "password": 'inco@rrect0Pass'
             }
             response = self.client.post(url, credentials)
@@ -140,7 +137,6 @@ class AccountTests(TestCase):
 
         url = reverse('phone_auth:phone_password_reset_confirm', kwargs=credentials)
         response = self.client.get(url)
-        # print(response)
         self.assertEqual(response.status_code, 302)
         # self.assertEqual(response.url[-14:], '/set-password/')
 
@@ -208,6 +204,43 @@ class AccountTests(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
 
+    def test_phone_email_verification_confirm_view(self):
+        # Email verification
+        self.assertFalse(self.email_obj.is_verified)
+        credentials = {
+            'idb64': urlsafe_base64_encode(
+                force_bytes(f'email{self.email_obj.pk}')),
+            'token': phone_token_generator(
+                email_address_obj=self.email_obj,
+                phone_number_obj=None).make_token(self.user)}
+        url = reverse(
+            'phone_auth:phone_email_verification_confirm',
+            kwargs=credentials)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            EmailAddress.objects.get(
+                pk=self.email_obj.pk).is_verified)
+
+        # Phone Verification
+        self.assertFalse(self.phone_obj.is_verified)
+        credentials = {
+            'idb64': urlsafe_base64_encode(
+                force_bytes(f'phone{self.phone_obj.pk}')),
+            'token': phone_token_generator(
+                email_address_obj=None,
+                phone_number_obj=self.phone_obj).make_token(self.user)}
+        url = reverse(
+            'phone_auth:phone_email_verification_confirm',
+            kwargs=credentials)
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            PhoneNumber.objects.get(
+                pk=self.phone_obj.pk).is_verified)
+
     def test_anonymous_required_decorator(self):
 
         @anonymous_required
@@ -236,53 +269,57 @@ class AccountTests(TestCase):
 
     def test_verified_email_required_decorator(self):
 
-        @verified_email_required
-        def tview(request):
-            return HttpResponse()
+        if AuthenticationMethod.EMAIL in app_settings.AUTHENTICATION_METHODS:
 
-        self.client.login(
-            login=self.data['email'],
-            password=self.data['password'])
-        request = self.client.get('/').wsgi_request
+            @verified_email_required
+            def tview(request):
+                return HttpResponse()
 
-        # check with not verified email
-        response = tview(request)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url,
-            reverse('phone_auth:phone_email_verification')
-        )
+            self.client.login(
+                login=self.data['email'],
+                password=self.data['password'])
+            request = self.client.get('/').wsgi_request
 
-        # check with verified email
-        self.email_obj.is_verified = True
-        self.email_obj.save()
-        response = tview(request)
-        self.assertEqual(response.status_code, 200)
+            # check with not verified email
+            response = tview(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url,
+                reverse('phone_auth:phone_email_verification')
+            )
+
+            # check with verified email
+            self.email_obj.is_verified = True
+            self.email_obj.save()
+            response = tview(request)
+            self.assertEqual(response.status_code, 200)
 
     def test_verified_phone_required_decorator(self):
 
-        @verified_phone_required
-        def tview(request):
-            return HttpResponse()
+        if AuthenticationMethod.PHONE in app_settings.AUTHENTICATION_METHODS:
 
-        self.client.login(
-            login=self.data['phone'],
-            password=self.data['password'])
-        request = self.client.get('/').wsgi_request
+            @verified_phone_required
+            def tview(request):
+                return HttpResponse()
 
-        # check with not verified phone
-        response = tview(request)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url,
-            reverse('phone_auth:phone_email_verification')
-        )
+            self.client.login(
+                login=self.data['phone'],
+                password=self.data['password'])
+            request = self.client.get('/').wsgi_request
 
-        # check with verified email
-        self.phone_obj.is_verified = True
-        self.phone_obj.save()
-        response = tview(request)
-        self.assertEqual(response.status_code, 200)
+            # check with not verified phone
+            response = tview(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url,
+                reverse('phone_auth:phone_email_verification')
+            )
+
+            # check with verified email
+            self.phone_obj.is_verified = True
+            self.phone_obj.save()
+            response = tview(request)
+            self.assertEqual(response.status_code, 200)
 
     def test_anonymous_required_mixin(self):
 
@@ -310,53 +347,57 @@ class AccountTests(TestCase):
 
     def test_verified_phone_required_mixin(self):
 
-        class Tview(VerifiedPhoneRequiredMixin, View):
+        if AuthenticationMethod.PHONE in app_settings.AUTHENTICATION_METHODS:
 
-            def get(self, request, *args, **kwargs):
-                return HttpResponse()
+            class Tview(VerifiedPhoneRequiredMixin, View):
 
-        self.client.login(
-            login=self.data['phone'],
-            password=self.data['password'])
+                def get(self, request, *args, **kwargs):
+                    return HttpResponse()
 
-        request = self.client.get('/').wsgi_request
+            self.client.login(
+                login=self.data['phone'],
+                password=self.data['password'])
 
-        # check with not verified phone
-        response = Tview.as_view()(request)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url,
-            reverse('phone_auth:phone_email_verification')
-        )
+            request = self.client.get('/').wsgi_request
 
-        # check with verified phone
-        self.phone_obj.is_verified = True
-        self.phone_obj.save()
-        response = Tview.as_view()(request)
-        self.assertEqual(response.status_code, 200)
+            # check with not verified phone
+            response = Tview.as_view()(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url,
+                reverse('phone_auth:phone_email_verification')
+            )
+
+            # check with verified phone
+            self.phone_obj.is_verified = True
+            self.phone_obj.save()
+            response = Tview.as_view()(request)
+            self.assertEqual(response.status_code, 200)
 
     def test_verified_email_required_mixin(self):
 
-        class Tview(VerifiedEmailRequiredMixin, View):
+        if AuthenticationMethod.EMAIL in app_settings.AUTHENTICATION_METHODS:
 
-            def get(self, request, *args, **kwargs):
-                return HttpResponse()
+            class Tview(VerifiedEmailRequiredMixin, View):
 
-        self.client.login(
-            login=self.data['email'],
-            password=self.data['password'])
-        request = self.client.get('/').wsgi_request
+                def get(self, request, *args, **kwargs):
+                    return HttpResponse()
 
-        # check with not verified email
-        response = Tview.as_view()(request)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(
-            response.url,
-            reverse('phone_auth:phone_email_verification')
-        )
+            self.client.login(
+                login=self.data['email'],
+                password=self.data['password'])
+            request = self.client.get('/').wsgi_request
 
-        # check with verified email
-        self.email_obj.is_verified = True
-        self.email_obj.save()
-        response = Tview.as_view()(request)
-        self.assertEqual(response.status_code, 200)
+            # check with not verified email
+            response = Tview.as_view()(request)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.url,
+                reverse('phone_auth:phone_email_verification')
+            )
+
+            # check with verified email
+            self.email_obj.is_verified = True
+            self.email_obj.save()
+            response = Tview.as_view()(request)
+            self.assertEqual(response.status_code, 200)

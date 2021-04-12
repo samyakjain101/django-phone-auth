@@ -13,12 +13,12 @@ Welcome to django-phone-auth's documentation!
    installation
    configuration
    templates
-
-
+   signals
+   decorators
+   mixins
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
