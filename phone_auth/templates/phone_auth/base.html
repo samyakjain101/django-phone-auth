@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,10 +10,12 @@
             Base Title
         {% endblock title_block  %}
     </title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     {% block body_block  %}
-        Base body
+        <!-- Base body -->
     {% endblock body_block  %}
 </body>
 </html>
