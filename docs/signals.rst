@@ -4,14 +4,14 @@ Signals
 There are several signals emitted during authentication flows. You can
 hook to them for your own needs.
 
-- ``phone_auth.signals.reset_pass_mail(sender, user, url, email)``
+- ``phone_auth.signals.reset_password_email(sender, user, url, email)``
     Sent when someone requests to reset password and email entered
     matches with a user. URL passed in the arguments is relative
     ('/accounts/<uidb64>/<token>/').
     Add domain name as a prefix to the relative URL and send this link to the user
     via email passed in the arguments. Password reset form will appear on opening this link.
 
-- ``phone_auth.signals.reset_pass_phone(sender, user, url, phone)``
+- ``phone_auth.signals.reset_password_phone(sender, user, url, phone)``
     Sent when someone requests to reset password and phone number entered
     matches with a user. URL passed in the arguments is relative
     ('/accounts/<uidb64>/<token>/').

@@ -1,10 +1,10 @@
-from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
+from . import app_settings
 
 
-def anonymous_required(function=None, redirect_url=settings.LOGIN_REDIRECT_URL):
+def anonymous_required(function=None, redirect_url=app_settings.LOGIN_REDIRECT_URL):
     """Decorator to check if a user is anonymous"""
 
     if not redirect_url:

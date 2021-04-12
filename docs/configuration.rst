@@ -3,8 +3,7 @@ Configuration
 
 Available settings:
 
-AUTHENTICATION_METHODS (=set)
-
+AUTHENTICATION_METHODS (={'phone', 'email', 'username'})
     Specifies the login method to use – whether the user logs in
     by entering their phone number, username or e-mail address.
     NOTE - ``AUTHENTICATION_METHODS`` can't be empty.
@@ -23,25 +22,29 @@ AUTHENTICATION_METHODS (=set)
         # Works with all possible combinations.
 
 REGISTER_USERNAME_REQUIRED (=True)
-
     By default, the username field is required for user registration.
     By changing this setting to ``False``, the username field will be
     set to optional.
 
 REGISTER_EMAIL_REQUIRED (=True)
-
     By default, the email field is required for user registration.
     By changing this setting to ``False``, the email field will be
     set to optional.
 
 REGISTER_FNAME_REQUIRED (=True)
-
     By default, the first_name field is required for user registration.
     By changing this setting to ``False``, the first_name field will be
     set to optional.
 
 REGISTER_LNAME_REQUIRED (=True)
-
     By default, the last_name field is required for user registration.
     By changing this setting to ``False``, the last_name field will be
     set to optional.
+
+LOGIN_REDIRECT_URL (='/accounts/profile/')
+    Specifies which URL to redirect after successful login.
+    By default, it is '/accounts/profile/'.
+
+LOGOUT_REDIRECT_URL (='/')
+    Specifies which URL to redirect after successful logout.
+    By default, it is '/'.

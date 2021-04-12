@@ -81,7 +81,6 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-LOGOUT_REDIRECT_URL = '/'
 
 # django-debug-toolbar settings
 INTERNAL_IPS = [

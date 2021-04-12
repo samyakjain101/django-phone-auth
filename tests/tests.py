@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
@@ -97,7 +96,7 @@ class AccountTests(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertFalse(response.wsgi_request.user.is_authenticated)
 
-    def test_phone_logouTview(self):
+    def test_phone_logout_view(self):
         # Login
         self.client.login(
             login=self.data['email'],
@@ -106,14 +105,13 @@ class AccountTests(TestCase):
         # Logout
         url = reverse('phone_auth:phone_logout')
         response = self.client.get(url)
+        print(response)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            settings.LOGOUT_REDIRECT_URL
-            if settings.LOGOUT_REDIRECT_URL is not None
-            else '/')
+            app_settings.LOGOUT_REDIRECT_URL)
 
-    def test_phone_password_reseTview(self):
+    def test_phone_password_reset_view(self):
         url = reverse('phone_auth:phone_password_reset')
 
         for method in ['phone', 'email']:
@@ -263,9 +261,7 @@ class AccountTests(TestCase):
 
         self.assertEqual(
             response.url,
-            f'{settings.LOGIN_REDIRECT_URL}?{REDIRECT_FIELD_NAME}=/'
-            if settings.LOGIN_REDIRECT_URL is not None
-            else '/')
+            f'{app_settings.LOGIN_REDIRECT_URL}?{REDIRECT_FIELD_NAME}=/')
 
     def test_verified_email_required_decorator(self):
 
@@ -341,9 +337,7 @@ class AccountTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            settings.LOGIN_REDIRECT_URL
-            if settings.LOGIN_REDIRECT_URL is not None
-            else '/')
+            app_settings.LOGIN_REDIRECT_URL)
 
     def test_verified_phone_required_mixin(self):
 

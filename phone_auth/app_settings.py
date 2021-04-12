@@ -43,9 +43,20 @@ class AppSettings:
         default = True
         return self._setting("REGISTER_LNAME_REQUIRED", default)
 
+    @property
+    def LOGIN_REDIRECT_URL(self):
+        default = '/accounts/profile/'
+        return self._setting("LOGIN_REDIRECT_URL", default)
+
+    @property
+    def LOGOUT_REDIRECT_URL(self):
+        default = '/'
+        return self._setting("LOGOUT_REDIRECT_URL", default)
+
     @staticmethod
     def _setting(name, default):
-        return getattr(settings, name, default)
+        ret = getattr(settings, name, default)
+        return ret if ret is not None else default
 
 
 app_settings = AppSettings()
