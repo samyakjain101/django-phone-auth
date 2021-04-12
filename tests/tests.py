@@ -1,7 +1,10 @@
+import string
+
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.test import TestCase
 from django.urls import reverse
@@ -18,6 +21,7 @@ from phone_auth.mixins import (AnonymousRequiredMixin,
                                VerifiedPhoneRequiredMixin)
 from phone_auth.models import EmailAddress, PhoneNumber
 from phone_auth.tokens import phone_token_generator
+from phone_auth.validators import validate_username
 
 
 class AccountTests(TestCase):
@@ -394,3 +398,30 @@ class AccountTests(TestCase):
             self.email_obj.save()
             response = Tview.as_view()(request)
             self.assertEqual(response.status_code, 200)
+
+    def test_username_validator(self):
+        self.assertIsNone(validate_username('a'))
+        self.assertIsNone(validate_username('A'))
+        self.assertIsNone(validate_username('a'*150))
+        self.assertIsNone(validate_username(string.digits))
+        self.assertIsNone(validate_username(string.ascii_lowercase))
+        self.assertIsNone(validate_username(string.ascii_uppercase))
+        self.assertIsNone(validate_username('.'))
+        self.assertIsNone(validate_username('-'))
+        self.assertIsNone(validate_username('_'))
+        try:
+            self.assertIsNone(validate_username(''))
+            # If exception not raised, test case failed.
+            self.assertTrue(False)
+        except ValidationError:
+            pass
+        try:
+            self.assertIsNone(validate_username('+'))
+            self.assertTrue(False)
+        except ValidationError:
+            pass
+        try:
+            self.assertIsNone(validate_username('@'))
+            self.assertTrue(False)
+        except ValidationError:
+            pass
