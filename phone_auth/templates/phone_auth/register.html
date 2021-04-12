@@ -1,13 +1,39 @@
 {% extends "phone_auth/base.html" %}
 
 {% block title_block %}
-    Document
+    Register
 {% endblock title_block %}
     
 {% block body_block %}
-    <form method="POST">
+    <!-- <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Register">
-    </form>
+    </form> -->
+
+    <div class="phoneauthform">
+        <h3 class="phoneauthform-title">Sign up!</h3>
+        <form class="phoneauthform-content" method="POST">
+            {% csrf_token %}
+            <!-- <label for="firstname">First Name</label> -->
+            <input placeholder="First Name" name="first_name" type="text">
+            
+            <!-- <label for="lastname">Last Name</label> -->
+            <input placeholder="Last Name" name="last_name" type="text">
+
+            <!-- <label for="username">Username</label> -->
+            <input placeholder="Username" name="username" type="text">
+
+            <!-- <label for="email">Email</label> -->
+            <input placeholder="someone@example.com" name="email" type="email">
+
+            <!-- <label for="phone">Phone</label> -->
+            <input placeholder="Phone" name="phone" type="tel">
+
+            <!-- <label for="password">Password</label> -->
+            <input placeholder="Password" name="password" type="password">
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 {% endblock body_block %}
