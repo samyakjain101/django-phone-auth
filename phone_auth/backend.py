@@ -30,10 +30,10 @@ class CustomAuthBackend(ModelBackend):
                 lookup_obj |= Q(phonenumber__phone=login)
             elif (AuthenticationMethod.EMAIL in authentication_methods and
                     EmailValidationForm({'email': login}).is_valid()):
-                lookup_obj |= Q(emailaddress__email=login)
+                lookup_obj |= Q(emailaddress__email__iexact=login)
             elif (AuthenticationMethod.USERNAME in authentication_methods and
                     UsernameValidationForm({'username': login}).is_valid()):
-                lookup_obj |= Q(username=login)
+                lookup_obj |= Q(username__exact=login)
             else:
                 return None
 

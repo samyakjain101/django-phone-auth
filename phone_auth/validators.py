@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 def get_username_regex():
     """Username should be alphanumeric and in lowercase"""
 
-    return r'^[a-z0-9]{4,30}$'
+    return r'^[a-zA-Z0-9]{4,30}$'
 
 
 def validate_username(username):

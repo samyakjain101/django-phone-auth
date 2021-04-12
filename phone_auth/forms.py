@@ -80,8 +80,6 @@ class PhoneRegisterForm(forms.Form):
                 if 'email' in e.args[0]:
                     self.add_error('email', 'Email already exists')
 
-        return user
-
 
 class PhoneLoginForm(forms.Form):
     """Form used for user login"""
@@ -115,7 +113,7 @@ class UsernameValidationForm(forms.Form):
 class PhonePasswordResetForm(forms.Form):
     """Checks if the user with provided email/phone exists.
 
-    If provided email/phone exists, send reset_pass_email/reset_pass_phone
+    If provided email/phone exists, send reset_password_email/reset_password_phone
     signal with user and URL (relative_path that is one-time use only link
     to reset password) arguments.
     """
@@ -131,7 +129,7 @@ class PhonePasswordResetForm(forms.Form):
             is_phone = True
 
         elif EmailValidationForm({'email': login}).is_valid():
-            lookup_obj |= Q(emailaddress__email=login)
+            lookup_obj |= Q(emailaddress__email__iexact=login)
 
         else:
             return None, False

@@ -1,37 +1,98 @@
 {% extends "phone_auth/base.html" %}
 
 {% block title_block %}
-    Register
+    Sign Up
 {% endblock title_block %}
     
 {% block body_block %}
-    <!-- <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Register">
-    </form> -->
 
-    <div class="phoneauthform">
-        <h3 class="phoneauthform-title">Sign up!</h3>
+    <!--suppress HtmlUnknownAttribute -->
+<div class="phoneauthform">
+        <h3 class="phoneauthform-title">Sign Up</h3>
         <form class="phoneauthform-content" method="POST">
             {% csrf_token %}
-            <!-- <label for="firstname">First Name</label> -->
-            <input placeholder="First Name" name="first_name" type="text">
-            
-            <!-- <label for="lastname">Last Name</label> -->
-            <input placeholder="Last Name" name="last_name" type="text">
+            {{ form.non_field_errors }}
 
-            <!-- <label for="username">Username</label> -->
-            <input placeholder="Username" name="username" type="text">
+            <div class="fieldWrapper">
+                {{ form.first_name.errors }}
+                <label for="id_first_name">
+                    First name{% if form.first_name.field.required %}*{% endif %}:
+                </label>
+                <input type="text"
+                       id="id_first_name"
+                       name="{{ form.first_name.html_name }}"
+                       {% if form.first_name.value %}
+                            value="{{ form.first_name.value }}"
+                       {% endif %}
+                       {% if form.first_name.field.required %}required{% endif %}>
+            </div>
 
-            <!-- <label for="email">Email</label> -->
-            <input placeholder="someone@example.com" name="email" type="email">
+            <div class="fieldWrapper">
+                {{ form.last_name.errors }}
+                <label for="id_last_name">
+                    Last name{% if form.last_name.field.required %}*{% endif %}:
+                </label>
+                <input type="text"
+                       id="id_last_name"
+                       name="{{ form.last_name.html_name }}"
+                       {% if form.last_name.value %}
+                            value="{{ form.last_name.value }}"
+                       {% endif %}
+                       {% if form.last_name.field.required %}required{% endif %}>
+            </div>
 
-            <!-- <label for="phone">Phone</label> -->
-            <input placeholder="Phone" name="phone" type="tel">
+            <div class="fieldWrapper">
+                {{ form.username.errors }}
+                <label for="id_username">
+                    Username{% if form.username.field.required %}*{% endif %}:
+                </label>
+                <input type="text"
+                       id="id_username"
+                       name="{{ form.username.html_name }}"
+                       {% if form.username.value %}
+                            value="{{ form.username.value }}"
+                       {% endif %}
+                       {% if form.username.field.required %}required{% endif %}>
+            </div>
 
-            <!-- <label for="password">Password</label> -->
-            <input placeholder="Password" name="password" type="password">
+            <div class="fieldWrapper">
+                {{ form.email.errors }}
+                <label for="id_email">
+                    Email{% if form.email.field.required %}*{% endif %}:
+                </label>
+                <input type="email"
+                       id="id_email"
+                       name="{{ form.email.html_name }}"
+                       {% if form.email.value %}
+                            value="{{ form.email.value }}"
+                       {% endif %}
+                       {% if form.email.field.required %}required{% endif %}>
+            </div>
+
+            <div class="fieldWrapper">
+                {{ form.phone.errors }}
+                <label for="id_phone">
+                    Phone{% if form.phone.field.required %}*{% endif %}:
+                </label>
+                <input type="tel"
+                       id="id_phone"
+                       name="{{ form.phone.html_name }}"
+                       {% if form.phone.value %}
+                            value="{{ form.phone.value }}"
+                       {% endif %}
+                       {% if form.phone.field.required %}required{% endif %}>
+            </div>
+
+            <div class="fieldWrapper">
+                {{ form.password.errors }}
+                <label for="id_password">
+                    Password{% if form.password.field.required %}*{% endif %}:
+                </label>
+                <input type="password"
+                       id="id_password"
+                       name="{{ form.password.html_name }}"
+                       {% if form.password.field.required %}required{% endif %}>
+            </div>
 
             <button type="submit">Submit</button>
         </form>

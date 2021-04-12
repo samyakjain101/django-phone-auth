@@ -51,6 +51,10 @@ class PhoneRegisterView(AnonymousRequiredMixin, FormView):
                 self.request, 'phone_auth/register.html', context={'form': form})
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
 
 class PhoneLoginView(AnonymousRequiredMixin, LoginView):
     """Display the login form and handle the login action."""
@@ -177,7 +181,7 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
                 try:
                     phone_obj = PhoneNumber.objects.get(
                         user=request.user,
-                        phone__iexact=phone)
+                        phone=phone)
                     if phone_obj.is_verified:
                         return redirect('phone_auth:phone_email_verification')
 
