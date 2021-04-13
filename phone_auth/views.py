@@ -78,6 +78,7 @@ class PhoneLoginView(AnonymousRequiredMixin, LoginView):
             login(self.request, user)
         else:
             form.add_error("login", "Invalid Credentials")
+            form.add_error(None, "Phone ")
             return render(
                 self.request,
                 "phone_auth/login.html",
