@@ -36,6 +36,21 @@ class PhoneRegisterForm(forms.Form):
         required=app_settings.REGISTER_LNAME_REQUIRED)
     password = forms.CharField(widget=forms.PasswordInput())
 
+    def clean(self):
+        errors = {}
+        if self.cleaned_data.get('email', None) is not None:
+            if EmailAddress.objects.filter(email__iexact=self.cleaned_data.get('email')).exists():
+                errors['email'] = 'Email already exists'
+        if self.cleaned_data.get('phone', None) is not None:
+            if PhoneNumber.objects.filter(phone=self.cleaned_data.get('phone')).exists():
+                errors['phone'] = 'Phone already exists'
+        if self.cleaned_data.get('username', None) is not None:
+            if User.objects.filter(username__exact=self.cleaned_data.get('username')).exists():
+                errors['username'] = 'Username already exists'
+
+        if errors:
+            raise ValidationError(errors)
+
     def _post_clean(self):
         super()._post_clean()
         # Validate the password after self.instance is updated with form data
@@ -60,7 +75,7 @@ class PhoneRegisterForm(forms.Form):
             self.cleaned_data['password'] = make_password(
                 self.cleaned_data['password'])
             email = self.cleaned_data.get('email', None)
-
+            print('hello')
             with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
                 PhoneNumber.objects.create(
