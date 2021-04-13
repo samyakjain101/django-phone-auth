@@ -16,7 +16,7 @@ class AppSettings:
         default = {
             self.AuthenticationMethod.USERNAME,
             self.AuthenticationMethod.EMAIL,
-            self.AuthenticationMethod.PHONE
+            self.AuthenticationMethod.PHONE,
         }
         auth_methods = self._setting("AUTHENTICATION_METHODS", default)
         if not auth_methods:
@@ -50,12 +50,12 @@ class AppSettings:
 
     @property
     def LOGIN_REDIRECT_URL(self):
-        default = '/accounts/profile/'
+        default = "/accounts/profile/"
         return self._setting("LOGIN_REDIRECT_URL", default)
 
     @property
     def LOGOUT_REDIRECT_URL(self):
-        default = '/'
+        default = "/"
         return self._setting("LOGOUT_REDIRECT_URL", default)
 
     @staticmethod

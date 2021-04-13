@@ -26,33 +26,39 @@ class PhoneRegisterForm(forms.Form):
 
     phone = PhoneNumberField()
     username = forms.CharField(
-        required=app_settings.REGISTER_USERNAME_REQUIRED,
-        validators=[validate_username])
-    email = forms.EmailField(
-        required=app_settings.REGISTER_EMAIL_REQUIRED)
-    first_name = forms.CharField(
-        required=app_settings.REGISTER_FNAME_REQUIRED)
-    last_name = forms.CharField(
-        required=app_settings.REGISTER_LNAME_REQUIRED)
+        required=app_settings.REGISTER_USERNAME_REQUIRED, validators=[validate_username]
+    )
+    email = forms.EmailField(required=app_settings.REGISTER_EMAIL_REQUIRED)
+    first_name = forms.CharField(required=app_settings.REGISTER_FNAME_REQUIRED)
+    last_name = forms.CharField(required=app_settings.REGISTER_LNAME_REQUIRED)
     password = forms.CharField(widget=forms.PasswordInput())
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(),
-        required=app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED)
+        required=app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED,
+    )
 
     def clean(self):
         errors = {}
         if app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED:
-            if self.cleaned_data.get('password') != self.cleaned_data.get('confirm_password'):
-                errors['confirm_password'] = "Password didn't match"
-        if self.cleaned_data.get('email', None) is not None:
-            if EmailAddress.objects.filter(email__iexact=self.cleaned_data.get('email')).exists():
-                errors['email'] = 'Email already exists'
-        if self.cleaned_data.get('phone', None) is not None:
-            if PhoneNumber.objects.filter(phone=self.cleaned_data.get('phone')).exists():
-                errors['phone'] = 'Phone already exists'
-        if self.cleaned_data.get('username', None) is not None:
-            if User.objects.filter(username__exact=self.cleaned_data.get('username')).exists():
-                errors['username'] = 'Username already exists'
+            if self.cleaned_data.get("password") != self.cleaned_data.get(
+                "confirm_password"
+            ):
+                errors["confirm_password"] = "Password didn't match"
+        if self.cleaned_data.get("email", None) is not None:
+            if EmailAddress.objects.filter(
+                email__iexact=self.cleaned_data.get("email")
+            ).exists():
+                errors["email"] = "Email already exists"
+        if self.cleaned_data.get("phone", None) is not None:
+            if PhoneNumber.objects.filter(
+                phone=self.cleaned_data.get("phone")
+            ).exists():
+                errors["phone"] = "Phone already exists"
+        if self.cleaned_data.get("username", None) is not None:
+            if User.objects.filter(
+                username__exact=self.cleaned_data.get("username")
+            ).exists():
+                errors["username"] = "Username already exists"
 
         if errors:
             raise ValidationError(errors)
@@ -61,57 +67,50 @@ class PhoneRegisterForm(forms.Form):
         super()._post_clean()
         # Validate the password after self.instance is updated with form data
         # by super().
-        password = self.cleaned_data.get('password')
+        password = self.cleaned_data.get("password")
         user_data = dict(self.cleaned_data)
-        if 'phone' in user_data:
-            user_data.pop('phone')
-        if 'confirm_password' in user_data:
-            user_data.pop('confirm_password')
+        if "phone" in user_data:
+            user_data.pop("phone")
+        if "confirm_password" in user_data:
+            user_data.pop("confirm_password")
         user_instance = User(**user_data)
 
         try:
-            password_validation.validate_password(
-                password, user=user_instance)
+            password_validation.validate_password(password, user=user_instance)
         except ValidationError as error:
-            self.add_error('password', error)
+            self.add_error("password", error)
 
     def save(self):
         try:
-            phone = self.cleaned_data.get('phone', None)
+            phone = self.cleaned_data.get("phone", None)
             if phone is not None:
-                self.cleaned_data.pop('phone')
+                self.cleaned_data.pop("phone")
 
-            if 'confirm_password' in self.cleaned_data:
-                self.cleaned_data.pop('confirm_password')
+            if "confirm_password" in self.cleaned_data:
+                self.cleaned_data.pop("confirm_password")
 
-            username = self.cleaned_data.get('username')
+            username = self.cleaned_data.get("username")
             if not username:
-                self.cleaned_data['username'] = uuid.uuid4().hex
+                self.cleaned_data["username"] = uuid.uuid4().hex
 
-            email = self.cleaned_data.get('email', None)
+            email = self.cleaned_data.get("email", None)
 
-            self.cleaned_data['password'] = make_password(
-                self.cleaned_data['password'])
+            self.cleaned_data["password"] = make_password(self.cleaned_data["password"])
 
             with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
                 if phone is not None:
-                    PhoneNumber.objects.create(
-                        user=user,
-                        phone=phone)
+                    PhoneNumber.objects.create(user=user, phone=phone)
                 if email is not None:
-                    EmailAddress.objects.create(
-                        user=user,
-                        email=email
-                    )
+                    EmailAddress.objects.create(user=user, email=email)
         except DatabaseError as e:
-            if 'UNIQUE constraint' in e.args[0]:
-                if 'phone' in e.args[0]:
-                    self.add_error('phone', 'Phone already exists')
-                if 'username' in e.args[0]:
-                    self.add_error('username', 'Username already exists')
-                if 'email' in e.args[0]:
-                    self.add_error('email', 'Email already exists')
+            if "UNIQUE constraint" in e.args[0]:
+                if "phone" in e.args[0]:
+                    self.add_error("phone", "Phone already exists")
+                if "username" in e.args[0]:
+                    self.add_error("username", "Username already exists")
+                if "email" in e.args[0]:
+                    self.add_error("email", "Email already exists")
 
 
 class PhoneLoginForm(forms.Form):
@@ -150,6 +149,7 @@ class PhonePasswordResetForm(forms.Form):
     signal with user and URL (relative_path that is one-time use only link
     to reset password) arguments.
     """
+
     login = forms.CharField()
 
     @staticmethod
@@ -157,11 +157,11 @@ class PhonePasswordResetForm(forms.Form):
         lookup_obj = Q()
 
         is_phone = False
-        if PhoneValidationForm({'phone': login}).is_valid():
+        if PhoneValidationForm({"phone": login}).is_valid():
             lookup_obj |= Q(phonenumber__phone=login)
             is_phone = True
 
-        elif EmailValidationForm({'email': login}).is_valid():
+        elif EmailValidationForm({"email": login}).is_valid():
             lookup_obj |= Q(emailaddress__email__iexact=login)
 
         else:
@@ -174,7 +174,7 @@ class PhonePasswordResetForm(forms.Form):
             return None, False
 
     def save(self):
-        login = self.cleaned_data.get('login', None)
+        login = self.cleaned_data.get("login", None)
         if login is not None:
             user, is_phone = self.get_users_and_method(login)
 
@@ -183,10 +183,14 @@ class PhonePasswordResetForm(forms.Form):
                     "phone_auth:phone_password_reset_confirm",
                     kwargs={
                         "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
-                        "token": default_token_generator.make_token(user)
-                    }
+                        "token": default_token_generator.make_token(user),
+                    },
                 )
                 if is_phone:
-                    reset_password_phone.send(sender=self.__class__, user=user, url=url, phone=login)
+                    reset_password_phone.send(
+                        sender=self.__class__, user=user, url=url, phone=login
+                    )
                 else:
-                    reset_password_email.send(sender=self.__class__, user=user, url=url, email=login)
+                    reset_password_email.send(
+                        sender=self.__class__, user=user, url=url, email=login
+                    )
