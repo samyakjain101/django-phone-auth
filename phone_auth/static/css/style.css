@@ -70,5 +70,19 @@ body {
 }
 
 .phoneauthform-content button:hover {
+  cursor: pointer;
   opacity: 1;
+}
+
+.errorlist{
+  padding: 1rem;
+  font-size: 1.4rem;
+  margin: 0.5rem;
+  border-radius: 2px;
+  list-style: none;
+  box-shadow: 0 0 1px 1px #ff8585;
+}
+
+.errorlist li{
+  padding: 0.2rem 0;
 }
