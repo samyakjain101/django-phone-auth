@@ -75,7 +75,6 @@ class PhoneRegisterForm(forms.Form):
             self.cleaned_data['password'] = make_password(
                 self.cleaned_data['password'])
             email = self.cleaned_data.get('email', None)
-            print('hello')
             with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
                 PhoneNumber.objects.create(
