@@ -43,7 +43,7 @@ class PhoneRegisterForm(forms.Form):
         errors = {}
         if app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED:
             if self.cleaned_data.get('password') != self.cleaned_data.get('confirm_password'):
-                errors['confirm_password'] = "Password didn't matched"
+                errors['confirm_password'] = "Password didn't match"
         if self.cleaned_data.get('email', None) is not None:
             if EmailAddress.objects.filter(email__iexact=self.cleaned_data.get('email')).exists():
                 errors['email'] = 'Email already exists'
