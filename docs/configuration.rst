@@ -41,6 +41,11 @@ REGISTER_LNAME_REQUIRED (=True)
     By changing this setting to ``False``, the last_name field will be
     set to optional.
 
+REGISTER_CONFIRM_PASSWORD_REQUIRED (=True)
+    By default, the confirm_password field is required for user registration.
+    By changing this setting to ``False``, the confirm_password field will be
+    set to optional.
+
 LOGIN_REDIRECT_URL (='/accounts/profile/')
     Specifies which URL to redirect after successful login.
     By default, it is '/accounts/profile/'.

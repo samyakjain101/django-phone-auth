@@ -44,6 +44,11 @@ class AppSettings:
         return self._setting("REGISTER_LNAME_REQUIRED", default)
 
     @property
+    def REGISTER_CONFIRM_PASSWORD_REQUIRED(self):
+        default = True
+        return self._setting("REGISTER_CONFIRM_PASSWORD_REQUIRED", default)
+
+    @property
     def LOGIN_REDIRECT_URL(self):
         default = '/accounts/profile/'
         return self._setting("LOGIN_REDIRECT_URL", default)

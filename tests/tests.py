@@ -53,7 +53,8 @@ class AccountTests(TestCase):
             "email": "someone@register.com",
             "first_name": "first",
             "last_name": "last",
-            "password": "abcd@1234"
+            "password": "abcd@1234",
+            "confirm_password": "abcd@1234"
         }
 
         response = self.client.post(url, data)

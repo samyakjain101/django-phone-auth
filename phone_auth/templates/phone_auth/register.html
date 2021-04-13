@@ -16,7 +16,7 @@
             <div class="fieldWrapper">
                 {{ form.first_name.errors }}
                 <label for="id_first_name">
-                    First name{% if form.first_name.field.required %}*{% endif %}:
+                    First Name{% if form.first_name.field.required %}*{% endif %}:
                 </label>
                 <input type="text"
                        id="id_first_name"
@@ -30,7 +30,7 @@
             <div class="fieldWrapper">
                 {{ form.last_name.errors }}
                 <label for="id_last_name">
-                    Last name{% if form.last_name.field.required %}*{% endif %}:
+                    Last Name{% if form.last_name.field.required %}*{% endif %}:
                 </label>
                 <input type="text"
                        id="id_last_name"
@@ -92,6 +92,17 @@
                        id="id_password"
                        name="{{ form.password.html_name }}"
                        {% if form.password.field.required %}required{% endif %}>
+            </div>
+
+            <div class="fieldWrapper">
+                {{ form.confirm_password.errors }}
+                <label for="id_confirm_password">
+                    Confirm Password{% if form.confirm_password.field.required %}*{% endif %}:
+                </label>
+                <input type="password"
+                       id="id_confirm_password"
+                       name="{{ form.confirm_password.html_name }}"
+                       {% if form.confirm_password.field.required %}required{% endif %}>
             </div>
 
             <button type="submit">Submit</button>

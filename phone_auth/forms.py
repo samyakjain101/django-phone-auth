@@ -35,9 +35,15 @@ class PhoneRegisterForm(forms.Form):
     last_name = forms.CharField(
         required=app_settings.REGISTER_LNAME_REQUIRED)
     password = forms.CharField(widget=forms.PasswordInput())
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(),
+        required=app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED)
 
     def clean(self):
         errors = {}
+        if app_settings.REGISTER_CONFIRM_PASSWORD_REQUIRED:
+            if self.cleaned_data.get('password') != self.cleaned_data.get('confirm_password'):
+                errors['confirm_password'] = "Password didn't matched"
         if self.cleaned_data.get('email', None) is not None:
             if EmailAddress.objects.filter(email__iexact=self.cleaned_data.get('email')).exists():
                 errors['email'] = 'Email already exists'
@@ -59,6 +65,8 @@ class PhoneRegisterForm(forms.Form):
         user_data = dict(self.cleaned_data)
         if 'phone' in user_data:
             user_data.pop('phone')
+        if 'confirm_password' in user_data:
+            user_data.pop('confirm_password')
         user_instance = User(**user_data)
 
         try:
@@ -69,17 +77,28 @@ class PhoneRegisterForm(forms.Form):
 
     def save(self):
         try:
-            phone_cleaned = self.cleaned_data.pop('phone')
-            if not self.cleaned_data['username']:
+            phone = self.cleaned_data.get('phone', None)
+            if phone is not None:
+                self.cleaned_data.pop('phone')
+
+            if 'confirm_password' in self.cleaned_data:
+                self.cleaned_data.pop('confirm_password')
+
+            username = self.cleaned_data.get('username')
+            if not username:
                 self.cleaned_data['username'] = uuid.uuid4().hex
+
+            email = self.cleaned_data.get('email', None)
+
             self.cleaned_data['password'] = make_password(
                 self.cleaned_data['password'])
-            email = self.cleaned_data.get('email', None)
+
             with transaction.atomic():
                 user = User.objects.create(**self.cleaned_data)
-                PhoneNumber.objects.create(
-                    user=user,
-                    phone=phone_cleaned)
+                if phone is not None:
+                    PhoneNumber.objects.create(
+                        user=user,
+                        phone=phone)
                 if email is not None:
                     EmailAddress.objects.create(
                         user=user,
