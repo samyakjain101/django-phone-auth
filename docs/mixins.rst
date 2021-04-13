@@ -4,7 +4,7 @@ Mixins
 Verified E-mail Required
 ------------------------
 
-Even when email verification is not mandatory during signup, there
+Although email verification is not mandatory during signup, there
 may be circumstances during which you really want to prevent
 unverified users from proceeding. For this purpose you can use the
 following mixin::
