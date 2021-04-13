@@ -74,7 +74,7 @@ body {
   opacity: 1;
 }
 
-.errorlist{
+.errorlist {
   padding: 1rem;
   font-size: 1.4rem;
   margin: 0.5rem;
@@ -83,6 +83,6 @@ body {
   box-shadow: 0 0 1px 1px #ff8585;
 }
 
-.errorlist li{
+.errorlist li {
   padding: 0.2rem 0;
 }
