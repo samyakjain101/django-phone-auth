@@ -156,14 +156,19 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
     template_name = "phone_auth/phone_and_email_verification.html"
 
     def get(self, request):
+        context = self.get_context_data()
+        return render(request, template_name=self.template_name, context=context)
+
+    def get_context_data(self):
         context = {
             "email_addresses": self.request.user.emailaddress_set.all(),
             "phone_numbers": self.request.user.phonenumber_set.all(),
         }
-        return render(request, template_name=self.template_name, context=context)
+        return context
 
     def post(self, request):
 
+        title = "Something Went Wrong"
         if request.POST.get("email", False):
             form = EmailValidationForm(request.POST)
             if form.is_valid():
@@ -182,6 +187,7 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
                         url=url,
                         email=email_obj.email,
                     )
+                    title = "Email Verification Sent"
                 except EmailAddress.DoesNotExist:
                     # In this case say email sent successfully
                     # to avoid user enumeration attack
@@ -203,10 +209,13 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
                         url=url,
                         phone=phone_obj.phone.__str__(),
                     )
+                    title = "Phone Verification Sent"
                 except PhoneNumber.DoesNotExist:
                     pass
 
-        return render(request, template_name=self.template_name)
+        context = self.get_context_data()
+        context["title"] = title
+        return render(request, template_name=self.template_name, context=context)
 
     def _get_token_url(self, email_obj, phone_obj):
         token = phone_token_generator(

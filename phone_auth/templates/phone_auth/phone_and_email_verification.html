@@ -5,6 +5,9 @@
 {% endblock title_block %}
 
 {% block body_block %}
+    {% if title %}
+        <h1>{{ title }}</h1>
+    {% endif %}
 
     {% for email_obj in email_addresses %}
         <div class="">{{ email_obj.email }} {{ email_obj.is_verified }}</div>
