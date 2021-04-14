@@ -11,11 +11,10 @@ from django.contrib.auth.views import (
 )
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render
-from django.urls import reverse, reverse_lazy
+from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -27,14 +26,12 @@ from phone_auth.mixins import AnonymousRequiredMixin
 
 from . import app_settings
 from .forms import (
-    EmailValidationForm,
+    PhoneEmailVerificationForm,
     PhoneLoginForm,
     PhonePasswordResetForm,
     PhoneRegisterForm,
-    PhoneValidationForm,
 )
 from .models import EmailAddress, PhoneNumber
-from .signals import verify_email, verify_phone
 from .tokens import phone_token_generator
 
 
@@ -145,12 +142,9 @@ class PhoneChangePasswordDoneView(PasswordChangeDoneView):
 
 
 class PhoneEmailVerificationView(LoginRequiredMixin, View):
-    """Display all email-addresses and phone-numbers associated with user
+    """
+    Display all email-addresses and phone-numbers associated with user
     account with verification status on GET request.
-
-    On POST request send verify_email/verify_phone signal with user instance
-    and relative_url which is one-time use link to verify email/phone
-    user requested to verify.
     """
 
     template_name = "phone_auth/phone_and_email_verification.html"
@@ -167,75 +161,13 @@ class PhoneEmailVerificationView(LoginRequiredMixin, View):
         return context
 
     def post(self, request):
-
         title = "Something Went Wrong"
-        if request.POST.get("email", False):
-            form = EmailValidationForm(request.POST)
-            if form.is_valid():
-                email = form.cleaned_data.get("email")
-                try:
-                    email_obj = EmailAddress.objects.get(
-                        user=request.user, email__iexact=email
-                    )
-                    if email_obj.is_verified:
-                        return redirect("phone_auth:phone_email_verification")
-
-                    url = self._get_token_url(email_obj=email_obj, phone_obj=None)
-                    verify_email.send(
-                        sender=self.__class__,
-                        user=request.user,
-                        url=url,
-                        email=email_obj.email,
-                    )
-                    title = "Email Verification Sent"
-                except EmailAddress.DoesNotExist:
-                    # In this case say email sent successfully
-                    # to avoid user enumeration attack
-                    pass
-
-        elif request.POST.get("phone", False):
-            form = PhoneValidationForm(request.POST)
-            if form.is_valid():
-                phone = form.cleaned_data.get("phone")
-                try:
-                    phone_obj = PhoneNumber.objects.get(user=request.user, phone=phone)
-                    if phone_obj.is_verified:
-                        return redirect("phone_auth:phone_email_verification")
-
-                    url = self._get_token_url(email_obj=None, phone_obj=phone_obj)
-                    verify_phone.send(
-                        sender=self.__class__,
-                        user=request.user,
-                        url=url,
-                        phone=phone_obj.phone.__str__(),
-                    )
-                    title = "Phone Verification Sent"
-                except PhoneNumber.DoesNotExist:
-                    pass
-
+        form = PhoneEmailVerificationForm(request.POST)
+        if form.is_valid():
+            title = form.save(request.user)
         context = self.get_context_data()
         context["title"] = title
         return render(request, template_name=self.template_name, context=context)
-
-    def _get_token_url(self, email_obj, phone_obj):
-        token = phone_token_generator(
-            email_address_obj=email_obj, phone_number_obj=phone_obj
-        ).make_token(self.request.user)
-        url = reverse(
-            "phone_auth:phone_email_verification_confirm",
-            kwargs={
-                "idb64": self._get_email_phone_b64(email_obj, phone_obj),
-                "token": token,
-            },
-        )
-        return url
-
-    @staticmethod
-    def _get_email_phone_b64(email_obj, phone_obj):
-        if email_obj is not None:
-            return urlsafe_base64_encode(force_bytes(f"email{email_obj.pk}"))
-        if phone_obj is not None:
-            return urlsafe_base64_encode(force_bytes(f"phone{phone_obj.pk}"))
 
 
 class PhoneEmailVerificationConfirmView(FormView):

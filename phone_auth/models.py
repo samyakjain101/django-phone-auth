@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+
+# noinspection PyUnresolvedReferences
 from phonenumber_field.modelfields import PhoneNumberField
 
 User = get_user_model()
