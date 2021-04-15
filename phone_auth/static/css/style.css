@@ -91,11 +91,87 @@ body {
   background-color: #fff;
   border-radius: 0.5rem;
   margin: 10% 25%;
-  height: 30vh;
+  min-height: 30vh;
   padding: 5rem;
   position: relative;
 }
 
 .phoneauth-jumbotron h1 {
   font-size: 3rem;
+}
+
+.dpa-help-text {
+  font-size: 1.2rem;
+}
+
+.dpa-help-text a {
+  text-decoration: none;
+  color: #0c4b33;
+}
+
+.dpa-table {
+  margin: 0 0 40px 0;
+  width: 100%;
+  display: table;
+}
+
+.dpa-table:last-child{
+  margin: 0;
+}
+
+.dpa-table-title{
+  margin: 1rem 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} 
+
+.dpa-table-title a{
+  text-decoration: none;
+  cursor: pointer;
+  color: #0c4b33;
+}
+
+.dpa-row {
+  display: table-row;
+  background: #fbfbfb;
+  padding: 0.5rem 0;
+}
+
+.dpa-cell {
+  padding: 0.5rem 1rem;
+  display: table-cell;
+}
+
+.dpa-row .dpa-cell:first-child{
+  width: 100%;
+}
+
+.dpa-cell:last-child{
+  text-align: center;
+}
+
+.dpa-cell p{
+  padding: 0.5rem 1rem;
+}
+
+.dpa-cell-btn{
+  background-color: #0c4b33;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  border: 0;
+  border-radius: 2px;
+  outline: 0;
+}
+
+.dpa-row:nth-of-type(odd) {
+  background: #eee;
+}
+
+.dpa-row.header {
+  color: #ffffff;
+  background: #0c4b33;
 }
