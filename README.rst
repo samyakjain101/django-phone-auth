@@ -35,6 +35,7 @@ Features
 - Phone/Email verification.
 - Password reset using phone/email.
 - Change password.
+- Add new email/phone.
 
 Running tests
 =============

@@ -19,10 +19,11 @@ phone_auth.signals.reset_password_email(sender, user, url, email)
 
 Example::
 
+    from django.dispatch import receiver
     from phone_auth.signals import reset_password_email
 
     @receiver(reset_password_email)
-    def reset_password_email_signal(sender, user, url, email):
+    def reset_password_email_signal(sender, user, url, email, **kwargs):
         ...
         # Send email
         ...
@@ -40,10 +41,11 @@ phone_auth.signals.reset_password_phone(sender, user, url, phone)
 
 Example::
 
+    from django.dispatch import receiver
     from phone_auth.signals import reset_password_phone
 
     @receiver(reset_password_phone)
-    def reset_password_phone_signal(sender, user, url, phone):
+    def reset_password_phone_signal(sender, user, url, phone, **kwargs):
         ...
         # Send SMS
         ...
@@ -61,10 +63,11 @@ phone_auth.signals.verify_email(sender, user, url, email)
 
 Example::
 
+    from django.dispatch import receiver
     from phone_auth.signals import verify_email
 
     @receiver(verify_email)
-    def verify_email_signal(sender, user, url, email):
+    def verify_email_signal(sender, user, url, email, **kwargs):
         ...
         # Send email
         ...
@@ -81,10 +84,11 @@ phone_auth.signals.verify_phone(sender, user, url, phone)
 
 Example::
 
+    from django.dispatch import receiver
     from phone_auth.signals import verify_phone
 
     @receiver(verify_phone)
-    def verify_phone_signal(sender, user, url, phone):
+    def verify_phone_signal(sender, user, url, phone, **kwargs):
         ...
         # Send SMS
         ...
