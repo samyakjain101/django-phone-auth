@@ -278,3 +278,7 @@ class PhoneEmailVerificationForm(forms.Form):
             return urlsafe_base64_encode(force_bytes(f"email{email_obj.pk}"))
         if phone_obj is not None:
             return urlsafe_base64_encode(force_bytes(f"phone{phone_obj.pk}"))
+
+
+class PhoneLogoutForm(forms.Form):
+    pass

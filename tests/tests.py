@@ -112,9 +112,9 @@ class AccountTests(TestCase):
 
         # Logout
         url = reverse("phone_auth:phone_logout")
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, app_settings.LOGOUT_REDIRECT_URL)
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
 
     def test_phone_password_reset_view(self):
         url = reverse("phone_auth:phone_password_reset")

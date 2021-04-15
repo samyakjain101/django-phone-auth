@@ -1,8 +1,8 @@
 from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import (
     LoginView,
-    LogoutView,
     PasswordChangeDoneView,
     PasswordChangeView,
     PasswordResetCompleteView,
@@ -27,6 +27,7 @@ from . import app_settings
 from .forms import (
     PhoneEmailVerificationForm,
     PhoneLoginForm,
+    PhoneLogoutForm,
     PhonePasswordResetForm,
     PhoneRegisterForm,
 )
@@ -83,10 +84,21 @@ class PhoneLoginView(AnonymousRequiredMixin, LoginView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class PhoneLogoutView(LogoutView):
-    """Handle Logout"""
+class PhoneLogoutView(FormView):
+    """Handle logout"""
 
-    next_page = app_settings.LOGOUT_REDIRECT_URL
+    template_name = "phone_auth/logout.html"
+    form_class = PhoneLogoutForm
+    success_url = _(app_settings.LOGOUT_REDIRECT_URL)
+
+    @method_decorator(csrf_protect)
+    @method_decorator(never_cache)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        auth_logout(self.request)
+        return super().form_valid(form)
 
 
 class PhonePasswordResetView(FormView):
@@ -97,6 +109,7 @@ class PhonePasswordResetView(FormView):
     success_url = reverse_lazy("phone_auth:phone_password_reset_done")
 
     @method_decorator(csrf_protect)
+    @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
