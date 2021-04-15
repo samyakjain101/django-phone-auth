@@ -282,3 +282,37 @@ class PhoneEmailVerificationForm(forms.Form):
 
 class PhoneLogoutForm(forms.Form):
     pass
+
+
+class AddPhoneForm(forms.Form):
+    """Form for adding extra phone no."""
+
+    phone = PhoneNumberField(required=True)
+
+    def clean(self):
+        errors = {}
+        if self.cleaned_data.get("phone", None) is not None:
+            if PhoneNumber.objects.filter(
+                phone=self.cleaned_data.get("phone")
+            ).exists():
+                errors["phone"] = "Phone already exists"
+
+        if errors:
+            raise ValidationError(errors)
+
+
+class AddEmailForm(forms.Form):
+    """Form for adding extra email"""
+
+    email = forms.EmailField(required=True)
+
+    def clean(self):
+        errors = {}
+        if self.cleaned_data.get("email", None) is not None:
+            if EmailAddress.objects.filter(
+                email__iexact=self.cleaned_data.get("email")
+            ).exists():
+                errors["email"] = "Email already exists"
+
+        if errors:
+            raise ValidationError(errors)

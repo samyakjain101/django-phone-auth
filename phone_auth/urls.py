@@ -1,6 +1,8 @@
 from django.urls import path
 
 from .views import (
+    AddEmailView,
+    AddPhoneView,
     PhoneChangePasswordDoneView,
     PhoneChangePasswordView,
     PhoneEmailVerificationConfirmView,
@@ -57,5 +59,15 @@ urlpatterns = [
         "user_verification_confirm/<idb64>/<token>/",
         PhoneEmailVerificationConfirmView.as_view(),
         name="phone_email_verification_confirm",
+    ),
+    path(
+        "phone/add",
+        AddPhoneView.as_view(),
+        name="add_phone",
+    ),
+    path(
+        "email/add",
+        AddEmailView.as_view(),
+        name="add_email",
     ),
 ]

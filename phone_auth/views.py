@@ -10,8 +10,9 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
 )
 from django.core.exceptions import ValidationError
+from django.db import DatabaseError, transaction
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_decode
@@ -25,6 +26,8 @@ from phone_auth.mixins import AnonymousRequiredMixin
 
 from . import app_settings
 from .forms import (
+    AddEmailForm,
+    AddPhoneForm,
     PhoneEmailVerificationForm,
     PhoneLoginForm,
     PhoneLogoutForm,
@@ -260,3 +263,60 @@ class PhoneEmailVerificationConfirmView(FormView):
         else:
             context["title"] = _("Verification failed")
         return context
+
+
+class AddPhoneView(LoginRequiredMixin, FormView):
+    """
+    Add Extra phone
+    """
+
+    template_name = "phone_auth/add_extra_phone_or_email.html"
+    form_class = AddPhoneForm
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        try:
+            phone = form.cleaned_data.get("phone", None)
+
+            with transaction.atomic():
+                user = self.request.user
+                if phone is not None:
+                    PhoneNumber.objects.create(user=user, phone=phone)
+
+        except DatabaseError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                if "phone" in e.args[0]:
+                    self.add_error("phone", "Phone already exists")
+
+        return redirect("phone_auth:phone_email_verification")
+
+
+class AddEmailView(LoginRequiredMixin, FormView):
+    """
+    Add Extra email
+    """
+
+    template_name = "phone_auth/add_extra_phone_or_email.html"
+    form_class = AddEmailForm
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        try:
+            email = form.cleaned_data.get("email", None)
+
+            with transaction.atomic():
+                user = self.request.user
+                if email is not None:
+                    EmailAddress.objects.create(user=user, email=email)
+        except DatabaseError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                if "email" in e.args[0]:
+                    self.add_error("email", "Email already exists")
+
+        return redirect("phone_auth:phone_email_verification")
