@@ -53,9 +53,7 @@ class PhoneSignupView(AnonymousRequiredMixin, FormView):
     def form_valid(self, form):
         form.save()
         if form.errors:
-            return render(
-                self.request, self.template_name, context={"form": form}
-            )
+            return render(self.request, self.template_name, context={"form": form})
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -278,9 +276,7 @@ class AddPhoneView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         form.save(self.request.user)
         if form.errors:
-            return render(
-                self.request, self.template_name, context={"form": form}
-            )
+            return render(self.request, self.template_name, context={"form": form})
         return super().form_valid(form)
 
 
@@ -298,7 +294,5 @@ class AddEmailView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         form.save(self.request.user)
         if form.errors:
-            return render(
-                self.request, self.template_name, context={"form": form}
-            )
+            return render(self.request, self.template_name, context={"form": form})
         return super().form_valid(form)
