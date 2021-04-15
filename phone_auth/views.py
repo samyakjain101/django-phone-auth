@@ -109,7 +109,6 @@ class PhonePasswordResetView(FormView):
     success_url = reverse_lazy("phone_auth:phone_password_reset_done")
 
     @method_decorator(csrf_protect)
-    @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -162,6 +161,10 @@ class PhoneEmailVerificationView(LoginRequiredMixin, FormView):
     template_name = "phone_auth/phone_and_email_verification.html"
     form_class = PhoneEmailVerificationForm
     title = None
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(PhoneEmailVerificationView, self).get_context_data()
