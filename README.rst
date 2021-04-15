@@ -19,12 +19,22 @@ Welcome to django-phone-auth!
  :target: https://pepy.tech/project/django-phone-auth
 
 A Django library that addresses authentication, registration, and account management using phone-number/email/username.
+It uses `django-phonenumber-field[phonenumbers] <https://pypi.org/project/django-phonenumber-field/>`_ to store phone numbers.
 
 Source code
   https://github.com/samyakjain101/django-phone-auth
 
 Documentation
   https://django-phone-auth.readthedocs.io/en/latest/
+
+Features
+========
+
+- Login through phone, email, or username.
+- User Registration.
+- Phone/Email verification.
+- Password reset using phone/email.
+- Change password.
 
 Running tests
 =============

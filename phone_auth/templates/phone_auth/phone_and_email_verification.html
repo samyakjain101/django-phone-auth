@@ -5,27 +5,58 @@
 {% endblock title_block %}
 
 {% block body_block %}
+    {% if title %}
+        <h1>{{ title }}</h1>
+    {% endif %}
 
-    {% for email_obj in email_addresses %}
-        <div class="">{{ email_obj.email }} {{ email_obj.is_verified }}</div>
-        {% if not email_obj.is_verified %}
-            <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="email" value="{{ email_obj.email }}">
-                <input type="submit" value="Verify">
-            </form>
-        {% endif %}
-    {% endfor %}
+    <table>
+        <tr>
+            <th>Email Address</th>
+            <th>Status</th>
+        </tr>
 
-    {% for phone_obj in phone_numbers %}
-        <div class="">{{ phone_obj.phone }} {{ phone_obj.is_verified }}</div>
-        {% if not phone_obj.is_verified %}
-            <form method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="phone" value="{{ phone_obj.phone }}">
-                <input type="submit" value="Verify">
-            </form>
-        {% endif %}
-    {% endfor %}
+        {% for email_obj in email_addresses %}
+            <tr>
+                <td>{{ email_obj.email }}</td>
+                <td>
+                    {% if email_obj.is_verified %}
+                        Verified
+                    {% else %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="method" value="email">
+                            <input type="hidden" name="pk" value="{{ email_obj.pk }}">
+                            <input type="submit" value="Verify">
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <table>
+        <tr>
+            <th>Phone Number</th>
+            <th>Status</th>
+        </tr>
+
+        {% for phone_obj in phone_numbers %}
+            <tr>
+                <td>{{ phone_obj.phone }}</td>
+                <td>
+                    {% if phone_obj.is_verified %}
+                        Verified
+                    {% else %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="method" value="phone">
+                            <input type="hidden" name="pk" value="{{ phone_obj.pk }}">
+                            <input type="submit" value="Verify">
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
 
 {% endblock body_block %}

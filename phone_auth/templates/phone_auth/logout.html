@@ -1,0 +1,15 @@
+{% extends "phone_auth/base.html" %}
+
+{% block title_block %}
+    Logout
+{% endblock title_block %}
+
+{% block body_block %}
+<div class="phoneauthform">
+    <h3 class="phoneauthform-title">Are you sure you want to logout?</h3>
+    <form class="phoneauthform-content" method="POST">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+{% endblock body_block %}

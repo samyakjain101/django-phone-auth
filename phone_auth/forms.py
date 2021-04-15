@@ -7,16 +7,25 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.db import DatabaseError, transaction
 from django.db.models import Q
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+# noinspection PyUnresolvedReferences
 from phonenumber_field.formfields import PhoneNumberField
 
 from phone_auth.validators import validate_username
 
 from . import app_settings
 from .models import EmailAddress, PhoneNumber
-from .signals import reset_password_email, reset_password_phone
+from .signals import (
+    reset_password_email,
+    reset_password_phone,
+    verify_email,
+    verify_phone,
+)
+from .tokens import phone_token_generator
 
 User = get_user_model()
 
@@ -194,3 +203,82 @@ class PhonePasswordResetForm(forms.Form):
                     reset_password_email.send(
                         sender=self.__class__, user=user, url=url, email=login
                     )
+
+
+class PhoneEmailVerificationForm(forms.Form):
+    """
+    Send verify_email/verify_phone signal with user instance
+    and relative_url which is one-time use link to verify email/phone
+    user requested to verify.
+    """
+
+    method = forms.CharField(max_length=5)
+    pk = forms.IntegerField()
+
+    def save(self, user):
+        method = self.cleaned_data.get("method")
+        pk = self.cleaned_data.get("pk")
+        if method == "email":
+            try:
+                email_obj = EmailAddress.objects.get(user=user, pk=pk)
+                if email_obj.is_verified:
+                    return redirect("phone_auth:phone_email_verification")
+
+                url = self._get_token_url(
+                    email_obj=email_obj, phone_obj=None, user=user
+                )
+                verify_email.send(
+                    sender=self.__class__,
+                    user=user,
+                    url=url,
+                    email=email_obj.email,
+                )
+                return "Email Verification Sent"
+            except EmailAddress.DoesNotExist:
+                # In this case say email sent successfully
+                # to avoid user enumeration attack
+                pass
+        elif method == "phone":
+            try:
+                phone_obj = PhoneNumber.objects.get(user=user, pk=pk)
+                if phone_obj.is_verified:
+                    return redirect("phone_auth:phone_email_verification")
+
+                url = self._get_token_url(
+                    email_obj=None, phone_obj=phone_obj, user=user
+                )
+                verify_phone.send(
+                    sender=self.__class__,
+                    user=user,
+                    url=url,
+                    phone=phone_obj.phone.__str__(),
+                )
+                return "Phone Verification Sent"
+            except PhoneNumber.DoesNotExist:
+                pass
+
+        return "Something Went Wrong"
+
+    def _get_token_url(self, email_obj, phone_obj, user):
+        token = phone_token_generator(
+            email_address_obj=email_obj, phone_number_obj=phone_obj
+        ).make_token(user)
+        url = reverse(
+            "phone_auth:phone_email_verification_confirm",
+            kwargs={
+                "idb64": self._get_email_phone_b64(email_obj, phone_obj),
+                "token": token,
+            },
+        )
+        return url
+
+    @staticmethod
+    def _get_email_phone_b64(email_obj, phone_obj):
+        if email_obj is not None:
+            return urlsafe_base64_encode(force_bytes(f"email{email_obj.pk}"))
+        if phone_obj is not None:
+            return urlsafe_base64_encode(force_bytes(f"phone{phone_obj.pk}"))
+
+
+class PhoneLogoutForm(forms.Form):
+    pass
