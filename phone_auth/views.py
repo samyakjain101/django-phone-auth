@@ -10,9 +10,8 @@ from django.contrib.auth.views import (
     PasswordResetDoneView,
 )
 from django.core.exceptions import ValidationError
-from django.db import DatabaseError, transaction
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.http import urlsafe_base64_decode
@@ -55,7 +54,7 @@ class PhoneSignupView(AnonymousRequiredMixin, FormView):
         form.save()
         if form.errors:
             return render(
-                self.request, "phone_auth/signup.html", context={"form": form}
+                self.request, self.template_name, context={"form": form}
             )
         return super().form_valid(form)
 
@@ -266,57 +265,40 @@ class PhoneEmailVerificationConfirmView(FormView):
 
 
 class AddPhoneView(LoginRequiredMixin, FormView):
-    """
-    Add Extra phone
-    """
+    """Add new phone"""
 
-    template_name = "phone_auth/add_extra_phone_or_email.html"
+    template_name = "phone_auth/add_new_phone.html"
     form_class = AddPhoneForm
+    success_url = reverse_lazy("phone_auth:phone_email_verification")
 
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        try:
-            phone = form.cleaned_data.get("phone", None)
-
-            with transaction.atomic():
-                user = self.request.user
-                if phone is not None:
-                    PhoneNumber.objects.create(user=user, phone=phone)
-
-        except DatabaseError as e:
-            if "UNIQUE constraint" in e.args[0]:
-                if "phone" in e.args[0]:
-                    self.add_error("phone", "Phone already exists")
-
-        return redirect("phone_auth:phone_email_verification")
+        form.save(self.request.user)
+        if form.errors:
+            return render(
+                self.request, self.template_name, context={"form": form}
+            )
+        return super().form_valid(form)
 
 
 class AddEmailView(LoginRequiredMixin, FormView):
-    """
-    Add Extra email
-    """
+    """Add new email"""
 
-    template_name = "phone_auth/add_extra_phone_or_email.html"
+    template_name = "phone_auth/add_new_email.html"
     form_class = AddEmailForm
+    success_url = reverse_lazy("phone_auth:phone_email_verification")
 
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        try:
-            email = form.cleaned_data.get("email", None)
-
-            with transaction.atomic():
-                user = self.request.user
-                if email is not None:
-                    EmailAddress.objects.create(user=user, email=email)
-        except DatabaseError as e:
-            if "UNIQUE constraint" in e.args[0]:
-                if "email" in e.args[0]:
-                    self.add_error("email", "Email already exists")
-
-        return redirect("phone_auth:phone_email_verification")
+        form.save(self.request.user)
+        if form.errors:
+            return render(
+                self.request, self.template_name, context={"form": form}
+            )
+        return super().form_valid(form)

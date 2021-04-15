@@ -61,12 +61,12 @@ urlpatterns = [
         name="phone_email_verification_confirm",
     ),
     path(
-        "phone/add",
+        "phone/add/",
         AddPhoneView.as_view(),
         name="add_phone",
     ),
     path(
-        "email/add",
+        "email/add/",
         AddEmailView.as_view(),
         name="add_email",
     ),

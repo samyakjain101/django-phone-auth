@@ -1,0 +1,32 @@
+{% extends "phone_auth/base.html" %}
+
+{% block title_block %}
+    Add Phone
+{% endblock title_block %}
+
+{% block body_block %}
+    <!--suppress HtmlUnknownAttribute -->
+<div class="phoneauthform">
+    <h3 class="phoneauthform-title">Add Phone</h3>
+    <form class="phoneauthform-content" method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="fieldWrapper">
+            {{ form.phone.errors }}
+            <label for="id_phone">
+                Phone:
+            </label>
+            <input type="tel"
+                   id="id_phone"
+                   name="phone"
+                   {% if form.phone.value %}
+                        value="{{ form.phone.value }}"
+                   {% endif %}
+                   {% if form.phone.field.required %}required{% endif %}>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+{% endblock body_block %}

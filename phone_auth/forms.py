@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -285,34 +285,30 @@ class PhoneLogoutForm(forms.Form):
 
 
 class AddPhoneForm(forms.Form):
-    """Form for adding extra phone no."""
+    """Form to add new phone number"""
 
     phone = PhoneNumberField(required=True)
 
-    def clean(self):
-        errors = {}
-        if self.cleaned_data.get("phone", None) is not None:
-            if PhoneNumber.objects.filter(
-                phone=self.cleaned_data.get("phone")
-            ).exists():
-                errors["phone"] = "Phone already exists"
+    def save(self, user):
+        try:
+            phone = self.cleaned_data.get("phone")
+            PhoneNumber.objects.create(user=user, phone=phone)
 
-        if errors:
-            raise ValidationError(errors)
+        except IntegrityError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                self.add_error("phone", "Phone already exists")
 
 
 class AddEmailForm(forms.Form):
-    """Form for adding extra email"""
+    """Form to add new email"""
 
     email = forms.EmailField(required=True)
 
-    def clean(self):
-        errors = {}
-        if self.cleaned_data.get("email", None) is not None:
-            if EmailAddress.objects.filter(
-                email__iexact=self.cleaned_data.get("email")
-            ).exists():
-                errors["email"] = "Email already exists"
+    def save(self, user):
+        try:
+            email = self.cleaned_data.get("email")
+            EmailAddress.objects.create(user=user, email=email)
 
-        if errors:
-            raise ValidationError(errors)
+        except IntegrityError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                self.add_error("email", "Email already exists")
