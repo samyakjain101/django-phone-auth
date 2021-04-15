@@ -39,9 +39,11 @@
 
         <button type="submit">Submit</button>
     </form>
-     <a href="{% url 'phone_auth:phone_password_reset' %}">Forgot Password?</a>
-    <div>
-        Don't have an account? <a href="{% url 'phone_auth:phone_signup' %}">Sign up</a>
+    <div class="dpa-help-text">
+        <p>
+            Don't have an account? <a href="{% url 'phone_auth:phone_signup' %}">Sign up</a>
+        </p> 
+        <a href="{% url 'phone_auth:phone_password_reset' %}">Forgot Password?</a>
     </div>
 </div>
 {% endblock body_block %}

@@ -107,8 +107,10 @@
 
         <button class="phoneauth-button" type="submit">Submit</button>
     </form>
-    <div>
-        Have an account? <a href="{% url 'phone_auth:phone_login' %}">Log in</a>
+    <div class="dpa-help-text">
+        <p>
+            Have an account? <a href="{% url 'phone_auth:phone_login' %}">Log in</a>
+        </p>
     </div>
 </div>
 {% endblock body_block %}
