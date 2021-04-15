@@ -1,62 +1,83 @@
 {% extends "phone_auth/base.html" %}
 
 {% block title_block %}
-    User Verification
+User Verification
 {% endblock title_block %}
 
 {% block body_block %}
+
+<div class="phoneauth-jumbotron">
     {% if title %}
-        <h1>{{ title }}</h1>
+    <h1>{{ title }}</h1>
     {% endif %}
 
-    <table>
-        <tr>
-            <th>Email Address</th>
-            <th>Status</th>
-        </tr>
 
+    <div class="dpa-table-title">
+        <h3>Email Addresses</h3>
+        <a href="">+ Add New</a>
+    </div>
+    <div class="dpa-table">
+        <div class="dpa-row header">
+            <div class="dpa-cell">
+                Email Address
+            </div>
+            <div class="dpa-cell">
+                Status
+            </div>
+        </div>
         {% for email_obj in email_addresses %}
-            <tr>
-                <td>{{ email_obj.email }}</td>
-                <td>
+        <div class="dpa-row">
+            <div class="dpa-cell">
+                {{ email_obj.email }}
+            </div>
+            <div class="dpa-cell">
+                <form method="POST">
                     {% if email_obj.is_verified %}
-                        Verified
+                    <p>Verified</p>
                     {% else %}
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="method" value="email">
-                            <input type="hidden" name="pk" value="{{ email_obj.pk }}">
-                            <input type="submit" value="Verify">
-                        </form>
+                    {% csrf_token %}
+                    <input type="hidden" name="method" value="email">
+                    <input type="hidden" name="pk" value="{{ email_obj.pk }}">
+                    <input class="dpa-cell-btn" type="submit" value="Verify">
                     {% endif %}
-                </td>
-            </tr>
+                </form>
+            </div>
+        </div>
         {% endfor %}
-    </table>
+    </div>
 
-    <table>
-        <tr>
-            <th>Phone Number</th>
-            <th>Status</th>
-        </tr>
-
+    <div class="dpa-table-title">
+        <h3>Phone Numbers</h3>
+        <a href="">+ Add New</a>
+    </div>
+    <div class="dpa-table">
+        <div class="dpa-row header">
+            <div class="dpa-cell">
+                Phone Number
+            </div>
+            <div class="dpa-cell">
+                Status
+            </div>
+        </div>
         {% for phone_obj in phone_numbers %}
-            <tr>
-                <td>{{ phone_obj.phone }}</td>
-                <td>
-                    {% if phone_obj.is_verified %}
-                        Verified
-                    {% else %}
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="method" value="phone">
-                            <input type="hidden" name="pk" value="{{ phone_obj.pk }}">
-                            <input type="submit" value="Verify">
-                        </form>
-                    {% endif %}
-                </td>
-            </tr>
+        <div class="dpa-row">
+            <div class="dpa-cell">
+                {{ phone_obj.phone }}
+            </div>
+            <div class="dpa-cell">
+                {% if phone_obj.is_verified %}
+                <p>Verified</p>
+                {% else %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="method" value="phone">
+                    <input type="hidden" name="pk" value="{{ phone_obj.pk }}">
+                    <input class="dpa-cell-btn" type="submit" value="Verify">
+                </form>
+                {% endif %}
+            </div>
+        </div>
         {% endfor %}
-    </table>
-
+    </div>
+</div>
 {% endblock body_block %}
