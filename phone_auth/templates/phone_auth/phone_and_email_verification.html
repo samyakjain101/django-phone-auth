@@ -7,10 +7,11 @@ User Verification
 {% block body_block %}
 
 <div class="phoneauth-jumbotron">
-    {% if title %}
-    <h1>{{ title }}</h1>
-    {% endif %}
-
+    <div class="message">
+        {% if title %}
+            <h1>{{ title }}</h1>
+        {% endif %}
+    </div>
 
     <div class="dpa-table-title">
         <h3>Email Addresses</h3>

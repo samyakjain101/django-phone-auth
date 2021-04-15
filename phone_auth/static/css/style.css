@@ -65,8 +65,6 @@ body {
   opacity: 0.9;
   color: #fff;
   border: 0;
-  -webkit-transition: all 0.2s ease-in;
-  transition: all 0.2s ease-in;
 }
 
 .phoneauthform-content button:hover {
@@ -94,6 +92,7 @@ body {
   min-height: 30vh;
   padding: 5rem;
   position: relative;
+  font-size: 1.6rem;
 }
 
 .phoneauth-jumbotron h1 {
@@ -101,7 +100,7 @@ body {
 }
 
 .dpa-help-text {
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   display: flex;
   justify-content: space-between;
 }
@@ -161,12 +160,13 @@ body {
 .dpa-cell-btn {
   background-color: #0c4b33;
   color: #fff;
-  font-size: 1rem;
+  font-size: 1.6rem;
   padding: 0.5rem 1rem;
   width: 100%;
   border: 0;
   border-radius: 2px;
   outline: 0;
+  cursor: pointer;
 }
 
 .dpa-row:nth-of-type(odd) {
@@ -176,4 +176,8 @@ body {
 .dpa-row.header {
   color: #fff;
   background: #0c4b33;
+}
+
+.message {
+  margin-bottom: 4rem;
 }

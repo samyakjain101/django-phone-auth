@@ -65,3 +65,10 @@ Users can request a phone/email verification using the
 A signal :ref:`verify_email <verify-email-signal>`/:ref:`verify_phone <verify-phone-signal>` will be sent with
 verification link (relative URL), user instance and email/phone.
 See :ref:`signals` for the details.
+
+
+Add New Phone/Email
+-------------------
+Users can add phone/email using
+``phone_auth.views.AddPhoneView`` / ``phone_auth.views.AddEmailView`` view over at
+``/accounts/phone/add/`` / ``/accounts/email/add/`` (URL name ``add_phone`` / ``add_email``).
