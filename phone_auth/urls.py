@@ -11,13 +11,13 @@ from .views import (
     PhonePasswordResetCompleteView,
     PhonePasswordResetDoneView,
     PhonePasswordResetView,
-    PhoneRegisterView,
+    PhoneSignupView,
 )
 
 app_name = "phone_auth"
 
 urlpatterns = [
-    path("register/", PhoneRegisterView.as_view(), name="phone_register"),
+    path("signup/", PhoneSignupView.as_view(), name="phone_signup"),
     path("login/", PhoneLoginView.as_view(), name="phone_login"),
     path("logout/", PhoneLogoutView.as_view(), name="phone_logout"),
     path(
