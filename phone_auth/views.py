@@ -19,7 +19,6 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import View
 from django.views.generic.edit import FormView
 
 from phone_auth.mixins import AnonymousRequiredMixin
@@ -141,33 +140,35 @@ class PhoneChangePasswordDoneView(PasswordChangeDoneView):
     template_name = "phone_auth/change_password_done.html"
 
 
-class PhoneEmailVerificationView(LoginRequiredMixin, View):
+class PhoneEmailVerificationView(LoginRequiredMixin, FormView):
     """
     Display all email-addresses and phone-numbers associated with user
     account with verification status on GET request.
     """
 
     template_name = "phone_auth/phone_and_email_verification.html"
+    form_class = PhoneEmailVerificationForm
+    title = None
 
-    def get(self, request):
-        context = self.get_context_data()
-        return render(request, template_name=self.template_name, context=context)
-
-    def get_context_data(self):
-        context = {
-            "email_addresses": self.request.user.emailaddress_set.all(),
-            "phone_numbers": self.request.user.phonenumber_set.all(),
-        }
+    def get_context_data(self, **kwargs):
+        context = super(PhoneEmailVerificationView, self).get_context_data()
+        context.update(
+            {
+                "email_addresses": self.request.user.emailaddress_set.all(),
+                "phone_numbers": self.request.user.phonenumber_set.all(),
+            }
+        )
+        if self.title is not None:
+            context["title"] = self.title
         return context
 
-    def post(self, request):
-        title = "Something Went Wrong"
-        form = PhoneEmailVerificationForm(request.POST)
-        if form.is_valid():
-            title = form.save(request.user)
-        context = self.get_context_data()
-        context["title"] = title
-        return render(request, template_name=self.template_name, context=context)
+    def form_valid(self, form):
+        self.title = form.save(self.request.user)
+        return render(
+            self.request,
+            template_name=self.template_name,
+            context=self.get_context_data(),
+        )
 
 
 class PhoneEmailVerificationConfirmView(FormView):

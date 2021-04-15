@@ -224,7 +224,9 @@ class PhoneEmailVerificationForm(forms.Form):
                 if email_obj.is_verified:
                     return redirect("phone_auth:phone_email_verification")
 
-                url = self._get_token_url(email_obj=email_obj, phone_obj=None)
+                url = self._get_token_url(
+                    email_obj=email_obj, phone_obj=None, user=user
+                )
                 verify_email.send(
                     sender=self.__class__,
                     user=user,
@@ -242,7 +244,9 @@ class PhoneEmailVerificationForm(forms.Form):
                 if phone_obj.is_verified:
                     return redirect("phone_auth:phone_email_verification")
 
-                url = self._get_token_url(email_obj=None, phone_obj=phone_obj)
+                url = self._get_token_url(
+                    email_obj=None, phone_obj=phone_obj, user=user
+                )
                 verify_phone.send(
                     sender=self.__class__,
                     user=user,
@@ -253,10 +257,12 @@ class PhoneEmailVerificationForm(forms.Form):
             except PhoneNumber.DoesNotExist:
                 pass
 
-    def _get_token_url(self, email_obj, phone_obj):
+        return "Something Went Wrong"
+
+    def _get_token_url(self, email_obj, phone_obj, user):
         token = phone_token_generator(
             email_address_obj=email_obj, phone_number_obj=phone_obj
-        ).make_token(self.request.user)
+        ).make_token(user)
         url = reverse(
             "phone_auth:phone_email_verification_confirm",
             kwargs={

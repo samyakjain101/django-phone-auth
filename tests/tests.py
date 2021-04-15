@@ -192,12 +192,12 @@ class AccountTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # POST request (email)
-        data = {"email": self.data.get("email")}
+        data = {"method": "email", "pk": self.email_obj.pk}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
 
         # POST request (phone)
-        data = {"phone": self.data.get("phone")}
+        data = {"method": "phone", "pk": self.phone_obj.pk}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 200)
 
