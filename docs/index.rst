@@ -17,6 +17,7 @@ Contents
    signals
    decorators
    mixins
+   views
 
 Indices and tables
 ==================
