@@ -35,24 +35,24 @@ from .models import EmailAddress, PhoneNumber
 from .tokens import phone_token_generator
 
 
-class PhoneRegisterView(AnonymousRequiredMixin, FormView):
+class PhoneSignupView(AnonymousRequiredMixin, FormView):
     """Display the register form and handle user registration."""
 
     form_class = PhoneRegisterForm
-    template_name = "phone_auth/register.html"
+    template_name = "phone_auth/signup.html"
     success_url = reverse_lazy("phone_auth:phone_login")
 
     @method_decorator(sensitive_post_parameters())
     @method_decorator(csrf_protect)
     @method_decorator(never_cache)
     def dispatch(self, *args, **kwargs):
-        return super(PhoneRegisterView, self).dispatch(*args, **kwargs)
+        return super(PhoneSignupView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
         form.save()
         if form.errors:
             return render(
-                self.request, "phone_auth/register.html", context={"form": form}
+                self.request, "phone_auth/signup.html", context={"form": form}
             )
         return super().form_valid(form)
 
