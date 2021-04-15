@@ -51,9 +51,9 @@ class AccountTests(TestCase):
             user=cls.user, email=user_data["email"]
         )
 
-    def test_phone_register_view(self):
+    def test_phone_signup_view(self):
 
-        url = reverse("phone_auth:phone_register")
+        url = reverse("phone_auth:phone_signup")
         data = {
             "phone": "+919999999999",
             "username": "test1",
