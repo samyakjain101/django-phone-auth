@@ -390,3 +390,29 @@ class AccountTests(TestCase):
             self.assertTrue(False)
         except ValidationError:
             pass
+
+    def test_add_email_view(self):
+        # Login
+        self.client.login(login=self.data["email"], password=self.data["password"])
+
+        url = reverse("phone_auth:add_email")
+
+        # test with different mail should pass
+        data = {"email": "someone1@register.com"}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(EmailAddress.objects.filter(email=data["email"]).exists())
+
+    def test_add_phone_view(self):
+        # Login
+        self.client.login(login=self.data["phone"], password=self.data["password"])
+
+        url = reverse("phone_auth:add_phone")
+
+        # test with different phone no should pass
+        data = {"phone": "+919876543211"}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+
+        self.assertTrue(PhoneNumber.objects.filter(phone=data["phone"]).exists())

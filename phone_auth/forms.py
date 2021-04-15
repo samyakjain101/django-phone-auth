@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -282,3 +282,33 @@ class PhoneEmailVerificationForm(forms.Form):
 
 class PhoneLogoutForm(forms.Form):
     pass
+
+
+class AddPhoneForm(forms.Form):
+    """Form to add new phone number"""
+
+    phone = PhoneNumberField(required=True)
+
+    def save(self, user):
+        try:
+            phone = self.cleaned_data.get("phone")
+            PhoneNumber.objects.create(user=user, phone=phone)
+
+        except IntegrityError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                self.add_error("phone", "Phone already exists")
+
+
+class AddEmailForm(forms.Form):
+    """Form to add new email"""
+
+    email = forms.EmailField(required=True)
+
+    def save(self, user):
+        try:
+            email = self.cleaned_data.get("email")
+            EmailAddress.objects.create(user=user, email=email)
+
+        except IntegrityError as e:
+            if "UNIQUE constraint" in e.args[0]:
+                self.add_error("email", "Email already exists")

@@ -1,0 +1,32 @@
+{% extends "phone_auth/base.html" %}
+
+{% block title_block %}
+    Add Email
+{% endblock title_block %}
+
+{% block body_block %}
+    <!--suppress HtmlUnknownAttribute -->
+<div class="phoneauthform">
+    <h3 class="phoneauthform-title">Add Email</h3>
+    <form class="phoneauthform-content" method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="fieldWrapper">
+            {{ form.email.errors }}
+            <label for="id_email">
+                Email:
+            </label>
+            <input type="email"
+                   id="id_email"
+                   name="email"
+                   {% if form.email.value %}
+                        value="{{ form.email.value }}"
+                   {% endif %}
+                   {% if form.email.field.required %}required{% endif %}>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+{% endblock body_block %}

@@ -25,6 +25,8 @@ from phone_auth.mixins import AnonymousRequiredMixin
 
 from . import app_settings
 from .forms import (
+    AddEmailForm,
+    AddPhoneForm,
     PhoneEmailVerificationForm,
     PhoneLoginForm,
     PhoneLogoutForm,
@@ -51,9 +53,7 @@ class PhoneSignupView(AnonymousRequiredMixin, FormView):
     def form_valid(self, form):
         form.save()
         if form.errors:
-            return render(
-                self.request, "phone_auth/signup.html", context={"form": form}
-            )
+            return render(self.request, self.template_name, context={"form": form})
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -260,3 +260,39 @@ class PhoneEmailVerificationConfirmView(FormView):
         else:
             context["title"] = _("Verification failed")
         return context
+
+
+class AddPhoneView(LoginRequiredMixin, FormView):
+    """Add new phone"""
+
+    template_name = "phone_auth/add_new_phone.html"
+    form_class = AddPhoneForm
+    success_url = reverse_lazy("phone_auth:phone_email_verification")
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save(self.request.user)
+        if form.errors:
+            return render(self.request, self.template_name, context={"form": form})
+        return super().form_valid(form)
+
+
+class AddEmailView(LoginRequiredMixin, FormView):
+    """Add new email"""
+
+    template_name = "phone_auth/add_new_email.html"
+    form_class = AddEmailForm
+    success_url = reverse_lazy("phone_auth:phone_email_verification")
+
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save(self.request.user)
+        if form.errors:
+            return render(self.request, self.template_name, context={"form": form})
+        return super().form_valid(form)
