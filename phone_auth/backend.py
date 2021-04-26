@@ -11,7 +11,7 @@ User = get_user_model()
 
 class CustomAuthBackend(ModelBackend):
     def authenticate(self, request, **kwargs):
-        """Authenticate with phone/email/username and password """
+        """Authenticate with phone/email/username and password"""
 
         login = kwargs.get("login", kwargs.get("username", None))
         password = kwargs.get("password", None)
