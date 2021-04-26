@@ -15,7 +15,7 @@ Welcome to django-phone-auth!
  :target: https://django-phone-auth.readthedocs.io/en/latest/?badge=latest
  :alt: Documentation Status
 
-.. image:: https://static.pepy.tech/personalized-badge/django-phone-auth?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
+.. image:: https://static.pepy.tech/personalized-badge/django-phone-auth?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads
  :target: https://pepy.tech/project/django-phone-auth
 
 A Django library that addresses authentication, registration, and account management using phone-number/email/username.
