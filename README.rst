@@ -45,3 +45,8 @@ available Python interpreters and generate a combined coverage report::
 
     tox
 
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/113d3c26fd0249cf9c0d6c4b6d7394f7
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/samyakjain101/django-phone-auth?utm_source=github.com&utm_medium=referral&utm_content=samyakjain101/django-phone-auth&utm_campaign=Badge_Grade_Settings
